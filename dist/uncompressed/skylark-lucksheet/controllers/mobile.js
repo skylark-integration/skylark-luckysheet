@@ -1,10 +1,10 @@
 define([
-    '../global/location',
-    './select',
-    './menuButton',
+    '../methods/location',
+    '../widgets/select',
+    '../methods/cells',
     './freezen',
     '../store'
-], function (m_location, m_select, menuButton, luckysheetFreezen, Store) {
+], function (m_location, m_select, cells, luckysheetFreezen, Store) {
     'use strict';
     const {rowLocation, colLocation, mouseposition} = m_location;
     const {selectHightlightShow} = m_select;
@@ -122,7 +122,7 @@ define([
                         col_index
                     ];
                 }
-                let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
+                let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
                 if (changeparam != null) {
                     columnseleted = changeparam[0];
                     rowseleted = changeparam[1];

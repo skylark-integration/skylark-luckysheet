@@ -10,8 +10,29 @@ define([
     '../../methods/set',
     '../../controllers/sheetMove',
     '../../methods/luckysheetConfigsetting',
-    '../../widgets/resize'
-], function (m_util, m_chartUtil, m_getdata, chartInfo, formula, m_func, m_get, m_location, m_set, m_sheetMove,luckysheetConfigsetting, m_validate, luckysheetsizeauto) {
+    '../../widgets/resize',
+    '../../vendors/Vuex',
+    '../../vendors/Vue',
+    '../../vendors/element-ui',
+    "./chartmix"
+], function (
+    m_util, 
+    m_chartUtil,
+    m_getdata,
+    chartInfo, 
+    formula, 
+    m_func, 
+    m_get, 
+    m_location, 
+    m_set, 
+    m_sheetMove,
+    luckysheetConfigsetting, 
+    luckysheetsizeauto,
+    Vuex,
+    Vue,
+    elementui,
+    chartmix
+) {
     'use strict';
     const {seriesLoadScripts, loadLinks, $$, arrayRemoveItem} = m_util;
     const {generateRandomKey, replaceHtml} = m_chartUtil;
@@ -26,11 +47,11 @@ define([
     let _colLocation = colLocation;    // Dynamically load dependent scripts and styles
     // Dynamically load dependent scripts and styles
     const dependScripts = [
-        'https://cdn.jsdelivr.net/npm/vue@2.6.11',
-        'https://unpkg.com/vuex@3.4.0',
+//        'https://cdn.jsdelivr.net/npm/vue@2.6.11',
+//        'https://unpkg.com/vuex@3.4.0',
         'https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js',
-        'https://cdn.bootcdn.net/ajax/libs/echarts/4.8.0/echarts.min.js',
-        'expendPlugins/chart/chartmix.umd.min.js'
+//        'https://cdn.bootcdn.net/ajax/libs/echarts/4.8.0/echarts.min.js',
+//        'expendPlugins/chart/chartmix.umd.min.js'
     ];
     // 'http://26.26.26.1:8000/chartmix.umd.js'
     const dependLinks = [
@@ -41,7 +62,8 @@ define([
     // Initialize the chart component
     function chart(data, isDemo) {
         loadLinks(dependLinks);
-        seriesLoadScripts(dependScripts, null, function () {
+        ///seriesLoadScripts(dependScripts, null, function () {
+        setTimeout(function () {
             const store = new Vuex.Store();
             console.info('chartmix::', chartmix.default);
             Vue.use(chartmix.default, { store });
@@ -93,7 +115,7 @@ define([
             }    // After the chart is loaded, mark it
             // After the chart is loaded, mark it
             arrayRemoveItem(chartInfo.asyncLoad, 'chart');
-        });
+        },0);
     }    // rendercharts
     // rendercharts
     function renderCharts(chartLists, isDemo) {

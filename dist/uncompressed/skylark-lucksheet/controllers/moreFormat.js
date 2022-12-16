@@ -1,17 +1,16 @@
 define([
     '../utils/util',
-    './constant',
+    '../widgets/constant',
     './menuButton',
-    '../global/editor',
-    '../global/tooltip',
-    '../global/validate',
+    '../widgets/tooltip',
+    '../methods/luckysheetConfigsetting',
     '../store',
     '../locale/locale'
-], function (m_util, m_constant, menuButton, editor, tooltip, m_validate, Store, locale) {
+], function (m_util, m_constant, menuButton, tooltip, luckysheetConfigsetting, Store, locale) {
     'use strict';
     const {replaceHtml} = m_util;
     const {modelHTML} = m_constant;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     //更多格式
     const luckysheetMoreFormat = {
         moneyFmtList: [
@@ -1904,7 +1903,7 @@ define([
             $(document).off('click.moreFormatConfirm').on('click.moreFormatConfirm', '#luckysheet-moreFormat-dialog #luckysheet-moreFormat-dialog-confirm', function () {
                 $('#luckysheet-moreFormat-dialog').hide();
                 $('#luckysheet-modal-dialog-mask').hide();
-                let d = editor.deepCopyFlowData(Store.flowdata);
+                let d = Store.deepCopyFlowData(Store.flowdata);
                 let value = $('#luckysheet-moreFormat-dialog .listbox .listItem.on .value').text();
                 let id = $(this).parents('#luckysheet-moreFormat-dialog').find('.box').attr('id');
                 if (id == 'morecurrency') {

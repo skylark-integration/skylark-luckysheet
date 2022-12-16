@@ -11,13 +11,15 @@ define([
     '../widgets/select',
     '../locale/locale',
     '../methods/protection_methods',
+    '../methods/luckysheetConfigsetting',
     '../store',
     'skylark-moment'
-], function (m_get, m_util, formula, m_validate, tooltip,  m_getdata, m_format, conditionformat_methods,m_constant, m_select, locale, m_protection, Store, dayjs) {
+], function (m_get, m_util, formula, m_validate, tooltip,  m_getdata, m_format, conditionformat_methods,m_constant, m_select, locale, m_protection,luckysheetConfigsetting, Store, dayjs) {
     'use strict';
     const {getSheetIndex, getRangetxt} = m_get;
     const {replaceHtml, getObjType, chatatABC} = m_util;
-    const {isRealNull, isEditMode} = m_validate;
+    const {isRealNull} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {getcellvalue} = m_getdata;
     const {genarate} = m_format;
     const {modelHTML, luckysheet_CFiconsImg} = m_constant;

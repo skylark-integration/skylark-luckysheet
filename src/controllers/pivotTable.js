@@ -315,7 +315,7 @@ define([
         refreshPivotTable: function (isRefreshCanvas = true) {
             let _this = this;
             let redo = {};
-            redo['pivotTable'] = pivotTable;
+            redo['pivotTable'] = pivotTable_methods;
             redo['data'] = Store.deepCopyFlowData(Store.flowdata);    //取数据
             //取数据
             _this.storePivotTableParam();

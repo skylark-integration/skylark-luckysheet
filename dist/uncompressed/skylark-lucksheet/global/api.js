@@ -3,44 +3,43 @@ define([
     '../utils/util',
     '../methods/get',
     '../locale/locale',
-    './method',
-    './formula',
-    './func_methods',
-    './tooltip',
-    './json',
-    './editor',
-    './formula',
-    './cleargridelement',
-    './format',
-    './setdata',
-    './sort',
-    './getRowlen',
-    './getdata',
-    './refresh',
-    './extend',
-    './validate',
-    './datecontroll',
-    './border',
-    './draw',
+    '../controllers/formula',
+    '../methods/func_methods',
+    '../widgets/tooltip',
+    '../methods/json',
+    '../controllers/editor',
+    '../controllers/formula',
+    '../widgets/cleargridelement',
+    '../methods/format',
+    '../methods/setdata',
+    '../controllers/sort',
+    '../methods/getRowlen',
+    '../methods/getdata',
+    '../controllers/refresh',
+    '../widgets/extend',
+    '../methods/validate',
+    '../methods/datecontroll',
+    '../methods/border',
+    '../widgets/draw',
     '../controllers/server',
     '../controllers/menuButton',
     '../controllers/selection',
-    '../controllers/luckysheetConfigsetting',
+    '../methods/luckysheetConfigsetting',
     '../controllers/freezen',
-    '../controllers/resize',
+    '../widgets/resize',
     '../controllers/sheetmanage',
     '../controllers/conditionformat',
-    '../controllers/sheetSearch',
-    '../controllers/select',
-    '../controllers/constant',
+    '../methods/sheetSearch',
+    '../widgets/select',
+    '../widgets/constant',
     '../controllers/filter',
     '../controllers/controlHistory',
     '../controllers/zoom',
-    '../controllers/dataVerificationCtrl',
-    '../controllers/imageCtrl',
+    '../widgets/dataVerificationCtrl',
+    '../widgets/imageCtrl',
     'skylark-moment',
     '../controllers/updateCell'
-], function (Store, m_util, m_get, locale, method, formula, func_methods, tooltip, json, editor, luckysheetformula, cleargridelement, m_format, m_setdata, m_sort, m_getRowlen, m_getdata, m_refresh, m_extend, m_validate, m_datecontroll, m_border, m_draw, server, menuButton, selection, luckysheetConfigsetting, luckysheetFreezen, luckysheetsizeauto, sheetmanage, conditionformat, m_sheetSearch, m_select, m_constant, m_filter, controlHistory, m_zoom, dataVerificationCtrl, imageCtrl, dayjs, m_updateCell) {
+], function (Store, m_util, m_get, locale, formula, func_methods, tooltip, json, editor, luckysheetformula, cleargridelement, m_format, m_setdata, m_sort, m_getRowlen, m_getdata, m_refresh, m_extend, m_validate, m_datecontroll, m_border, m_draw, server, menuButton, selection, luckysheetConfigsetting, luckysheetFreezen, luckysheetsizeauto, sheetmanage, conditionformat, m_sheetSearch, m_select, m_constant, m_filter, controlHistory, m_zoom, dataVerificationCtrl, imageCtrl, dayjs, m_updateCell) {
     'use strict';
     const {replaceHtml, getObjType, chatatABC, luckysheetactiveCell} = m_util;
     const {getSheetIndex, getluckysheet_select_save, getluckysheetfile, getRangetxt} = m_get;
@@ -51,7 +50,8 @@ define([
     const {getdatabyselection, getcellvalue} = m_getdata;
     const {luckysheetrefreshgrid, jfrefreshgrid, jfrefreshgrid_rhcw} = m_refresh;
     const {luckysheetDeleteCell, luckysheetextendtable, luckysheetdeletetable} = m_extend;
-    const {isRealNull, valueIsError, isRealNum, isEditMode, hasPartMC} = m_validate;
+    const {isRealNull, valueIsError, isRealNum, hasPartMC} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {isdatetime, diff} = m_datecontroll;
     const {getBorderInfoCompute} = m_border;
     const {luckysheetDrawMain} = m_draw;
@@ -61,7 +61,8 @@ define([
     const {createFilterOptions} = m_filter;
     const {zoomRefreshView, zoomNumberDomBind} = m_zoom;
     const {luckysheetupdateCell} = m_updateCell;
-    const IDCardReg = /^\d{6}(18|19|20)?\d{2}(0[1-9]|1[12])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/i;    /**
+    const IDCardReg = /^\d{6}(18|19|20)?\d{2}(0[1-9]|1[12])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/i;   
+     /**
  * 获取单元格的值
  * @param {Number} row 单元格所在行数；从0开始的整数，0表示第一行
  * @param {Number} column 单元格所在列数；从0开始的整数，0表示第一列
@@ -106,7 +107,7 @@ define([
             return tooltip.info('The order parameter is invalid.', '');
         }    /* cell更新前触发  */
         /* cell更新前触发  */
-        if (!method.createHookFunction('cellUpdateBefore', row, column, value, isRefresh)) {
+        if (!luckysheetConfigsetting.createHookFunction('cellUpdateBefore', row, column, value, isRefresh)) {
             /* 如果cellUpdateBefore函数返回false 则不执行后续的更新 */
             return;
         }
@@ -214,10 +215,10 @@ define([
         /* cell更新后触发  */
         setTimeout(() => {
             // Hook function
-            method.createHookFunction('cellUpdated', row, column, JSON.parse(oldValue), Store.flowdata[row][column], isRefresh);
+            luckysheetConfigsetting.createHookFunction('cellUpdated', row, column, JSON.parse(oldValue), Store.flowdata[row][column], isRefresh);
         }, 0);
         if (file.index == Store.currentSheetIndex && isRefresh) {
-            jfrefreshgrid(data, [{
+            Store.refreshRange(data, [{
                     'row': [
                         row,
                         row
@@ -226,7 +227,7 @@ define([
                         column,
                         column
                     ]
-                }]);    //update data, meanwhile refresh canvas and store data to history
+                }]); 
         } else
             //update data, meanwhile refresh canvas and store data to history
             {
@@ -258,7 +259,7 @@ define([
         }    // 若操作为当前sheet页，则刷新当前sheet页
         // 若操作为当前sheet页，则刷新当前sheet页
         if (order === curSheetOrder) {
-            jfrefreshgrid(targetSheetData, [{
+            Store.refreshRange(targetSheetData, [{
                     row: [
                         row,
                         row
@@ -354,7 +355,7 @@ define([
         if (file.index == Store.currentSheetIndex) {
             file.config = cfg;
             Store.config = cfg;
-            jfrefreshgrid(targetSheetData, [{
+            Store.refreshRange(targetSheetData, [{
                     'row': [
                         row,
                         row
@@ -449,7 +450,7 @@ define([
         file.data.length = 0;
         file.data.push(...sheetData);
         if (file.index == Store.currentSheetIndex) {
-            jfrefreshgrid(fileData, undefined, undefined, true, false);
+            Store.refreshRange(fileData, undefined, undefined, true, false);
         }
         luckysheetrefreshgrid();
         if (options.success && typeof options.success === 'function') {
@@ -520,7 +521,7 @@ define([
                 top
             ];
             luckysheetFreezen.saveFreezen(freezenhorizontaldata, top, null, null);
-            if (luckysheetFreezen.freezenverticaldata != null) {
+            if (Store.freezenverticaldata != null) {
                 luckysheetFreezen.cancelFreezenVertical();
                 luckysheetFreezen.createAssistCanvas();
                 luckysheetrefreshgrid();
@@ -549,7 +550,7 @@ define([
                 left
             ];
             luckysheetFreezen.saveFreezen(null, null, freezenverticaldata, left);
-            if (luckysheetFreezen.freezenhorizontaldata != null) {
+            if (Store.freezenhorizontaldata != null) {
                 luckysheetFreezen.cancelFreezenHorizontal();
                 luckysheetFreezen.createAssistCanvas();
                 luckysheetrefreshgrid();
@@ -597,7 +598,7 @@ define([
                 top
             ];
             luckysheetFreezen.saveFreezen(freezenhorizontaldata, top, null, null);
-            if (luckysheetFreezen.freezenverticaldata != null) {
+            if (Store.freezenverticaldata != null) {
                 luckysheetFreezen.cancelFreezenVertical();
                 luckysheetFreezen.createAssistCanvas();
                 luckysheetrefreshgrid();
@@ -646,7 +647,7 @@ define([
                 left
             ];
             luckysheetFreezen.saveFreezen(null, null, freezenverticaldata, left);
-            if (luckysheetFreezen.freezenhorizontaldata != null) {
+            if (Store.freezenhorizontaldata != null) {
                 luckysheetFreezen.cancelFreezenHorizontal();
                 luckysheetFreezen.createAssistCanvas();
                 luckysheetrefreshgrid();
@@ -660,10 +661,10 @@ define([
         luckysheetFreezen.saveFrozen('freezenCancel', order);    // 取消当前sheet冻结时，刷新canvas
         // 取消当前sheet冻结时，刷新canvas
         if (!order || order == getSheetIndex(Store.currentSheetIndex)) {
-            if (luckysheetFreezen.freezenverticaldata != null) {
+            if (Store.freezenverticaldata != null) {
                 luckysheetFreezen.cancelFreezenVertical();
             }
-            if (luckysheetFreezen.freezenhorizontaldata != null) {
+            if (Store.freezenhorizontaldata != null) {
                 luckysheetFreezen.cancelFreezenHorizontal();
             }
             luckysheetFreezen.createAssistCanvas();
@@ -900,7 +901,7 @@ define([
             Store.jfredo.push(redo);
         }
         Store.luckysheetfile[order].config = cfg;
-        server.saveParam('cg', file.index, cfg[cfgKey], { 'k': cfgKey });    // 若操作sheet为当前sheet页，行高、列宽 刷新
+        Store.saveParam('cg', file.index, cfg[cfgKey], { 'k': cfgKey });    // 若操作sheet为当前sheet页，行高、列宽 刷新
         // 若操作sheet为当前sheet页，行高、列宽 刷新
         if (order == curSheetOrder) {
             //config
@@ -938,7 +939,7 @@ define([
         }    //config
         //config
         Store.luckysheetfile[order].config = Store.config;
-        server.saveParam('cg', file.index, cfg[cfgKey], { 'k': cfgKey });    // 若操作sheet为当前sheet页，行高、列宽 刷新
+        Store.saveParam('cg', file.index, cfg[cfgKey], { 'k': cfgKey });    // 若操作sheet为当前sheet页，行高、列宽 刷新
         // 若操作sheet为当前sheet页，行高、列宽 刷新
         if (order === curSheetOrder) {
             Store.config = cfg;
@@ -982,7 +983,7 @@ define([
             }
         }
         file.config = cfg;
-        server.saveParam('cg', file.index, cfg['rowlen'], { 'k': 'rowlen' });
+        Store.saveParam('cg', file.index, cfg['rowlen'], { 'k': 'rowlen' });
         if (file.index == Store.currentSheetIndex) {
             Store.config = cfg;
             jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
@@ -1013,7 +1014,7 @@ define([
             }
         }
         file.config = cfg;
-        server.saveParam('cg', file.index, cfg['columnlen'], { 'k': 'columnlen' });
+        Store.saveParam('cg', file.index, cfg['columnlen'], { 'k': 'columnlen' });
         if (file.index == Store.currentSheetIndex) {
             Store.config = cfg;
             jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
@@ -1894,7 +1895,7 @@ define([
             return tooltip.info('The order parameter is invalid.', '');
         }
         for (let i = 0; i < range.length; i++) {
-            let changeparam = menuButton.mergeMoveMain(range[i].column, range[i].row, range[i]);
+            let changeparam = cells.mergeMoveMain(range[i].column, range[i].row, range[i]);
             if (changeparam) {
                 range[i] = {
                     'row': changeparam[1],
@@ -1954,7 +1955,7 @@ define([
         file.data.length = 0;
         file.data.push(...sheetData);
         if (file.index == Store.currentSheetIndex) {
-            jfrefreshgrid(fileData, [{
+            Store.refreshRange(fileData, [{
                     row: range.row,
                     column: range.column
                 }], undefined, true, false);
@@ -2046,7 +2047,7 @@ define([
         file.data.length = 0;
         file.data.push(...sheetData);
         if (file.index == Store.currentSheetIndex) {
-            jfrefreshgrid(fileData, undefined, undefined, true, false);
+            Store.refreshRange(fileData, undefined, undefined, true, false);
         }
         luckysheetrefreshgrid();
         if (success && typeof success === 'function') {
@@ -2289,7 +2290,7 @@ define([
                     });
                 }
                 Store.clearjfundo = false;
-                jfrefreshgrid(data, range, { 'cfg': cfg });
+                Store.refreshRange(data, range, { 'cfg': cfg });
                 Store.clearjfundo = true;
             } else {
                 file.data = data;
@@ -2388,7 +2389,7 @@ define([
                 });
             }
             Store.clearjfundo = false;
-            jfrefreshgrid(data, range, { 'cfg': cfg });
+            Store.refreshRange(data, range, { 'cfg': cfg });
             Store.clearjfundo = true;
         } else {
             file.data = data;
@@ -2450,7 +2451,7 @@ define([
             };
         }
         if (file.index == Store.currentSheetIndex) {
-            jfrefreshgrid(fileData, [{
+            Store.refreshRange(fileData, [{
                     'row': [
                         r1,
                         r2
@@ -2529,7 +2530,7 @@ define([
             };
         }
         if (file.index === Store.currentSheetIndex) {
-            jfrefreshgrid(fileData, [{
+            Store.refreshRange(fileData, [{
                     'row': [
                         str,
                         r2
@@ -2757,8 +2758,8 @@ define([
         //刷新一次表格
         conditionformat.ref(historyRules, currentRules);    //发送给后台
         //发送给后台
-        if (server.allowUpdate) {
-            server.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
+        if (Store.allowUpdate) {
+            Store.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
         }
         if (success && typeof success === 'function') {
             success();
@@ -2996,8 +2997,8 @@ define([
         //刷新一次表格
         conditionformat.ref(historyRules, currentRules);    //发送给后台
         //发送给后台
-        if (server.allowUpdate) {
-            server.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
+        if (Store.allowUpdate) {
+            Store.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
         }
         if (success && typeof success === 'function') {
             success();
@@ -3030,8 +3031,8 @@ define([
         //刷新一次表格
         conditionformat.ref(historyRules, currentRules);    //发送给后台
         //发送给后台
-        if (server.allowUpdate) {
-            server.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
+        if (Store.allowUpdate) {
+            Store.saveParam('all', file.index, ruleArr, { 'k': 'luckysheet_conditionformat_save' });
         }
         setTimeout(() => {
             if (success && typeof success === 'function') {
@@ -3108,7 +3109,7 @@ define([
             }
         }
         if (file.index == Store.currentSheetIndex) {
-            jfrefreshgrid(d, range);
+            Store.refreshRange(d, range);
         } else {
             file.data = d;
         }
@@ -3595,8 +3596,8 @@ define([
         $('#luckysheet-sheets-item' + index).addClass('luckysheet-sheets-item-active');
         $('#luckysheet-cell-main').append('<div id="luckysheet-datavisual-selection-set-' + index + '" class="luckysheet-datavisual-selection-set"></div>');
         cleargridelement(true);
-        server.saveParam('sha', null, $.extend(true, {}, sheetconfig));
-        server.saveParam('shr', null, orders);
+        Store.saveParam('sha', null, $.extend(true, {}, sheetconfig));
+        Store.saveParam('shr', null, orders);
         if (Store.clearjfundo) {
             Store.jfundo.length = 0;
             let redo = {};
@@ -3606,7 +3607,7 @@ define([
             redo['currentSheetIndex'] = Store.currentSheetIndex;
             Store.jfredo.push(redo);
         }
-        sheetmanage.changeSheetExec(index, false, true);
+        Store.changeSheet(index, false, true);
         if (success && typeof success === 'function') {
             success();
         }
@@ -3668,11 +3669,11 @@ define([
         $('#luckysheet-sheets-item' + index).addClass('luckysheet-sheets-item-active');
         $('#luckysheet-cell-main').append('<div id="luckysheet-datavisual-selection-set-' + index + '" class="luckysheet-datavisual-selection-set"></div>');
         cleargridelement(true);
-        server.saveParam('shc', index, {
+        Store.saveParam('shc', index, {
             'copyindex': copyindex,
             'name': copyjson.name
         });
-        sheetmanage.changeSheetExec(index);
+        Store.changeSheet(index);
         sheetmanage.reOrderAllSheet();
         if (Store.clearjfundo) {
             Store.jfredo.push({
@@ -3752,7 +3753,7 @@ define([
         let oldtxt = file.name;
         file.name = name;
         $('#luckysheet-sheets-item' + file.index + ' .luckysheet-sheets-item-name').text(name);
-        server.saveParam('all', file.index, name, { 'k': 'name' });
+        Store.saveParam('all', file.index, name, { 'k': 'name' });
         if (Store.clearjfundo) {
             let redo = {};
             redo['type'] = 'sheetName';
@@ -3779,7 +3780,7 @@ define([
         file.color = color;
         $('#luckysheet-sheets-item' + file.index).find('.luckysheet-sheets-item-color').remove();
         $('#luckysheet-sheets-item' + file.index).append('<div class="luckysheet-sheets-item-color" style=" position: absolute; width: 100%; height: 3px; bottom: 0px; left: 0px; background-color: ' + color + ';"></div>');
-        server.saveParam('all', file.index, color, { 'k': 'color' });
+        Store.saveParam('all', file.index, color, { 'k': 'color' });
         if (Store.clearjfundo) {
             let redo = {};
             redo['type'] = 'sheetColor';
@@ -3848,7 +3849,7 @@ define([
             arr[i].order = i;
             orders[item.index.toString()] = i;
         });
-        server.saveParam('shr', null, orders);
+        Store.saveParam('shr', null, orders);
         if (success && typeof success === 'function') {
             success();
         }
@@ -3883,7 +3884,7 @@ define([
                 $('#luckysheet-sheets-item' + item.index).insertAfter($('#luckysheet-sheets-item' + preIndex));
             }
         });
-        server.saveParam('shr', null, orders);
+        Store.saveParam('shr', null, orders);
         let {success} = { ...options };
         if (success && typeof success === 'function') {
             success();
@@ -3899,7 +3900,7 @@ define([
             return tooltip.info('The order parameter is invalid.', '');
         }
         file['zoomRatio'] = zoom;
-        server.saveParam('all', file.index, zoom, { 'k': 'zoomRatio' });
+        Store.saveParam('all', file.index, zoom, { 'k': 'zoomRatio' });
         if (file.index == Store.currentSheetIndex) {
             Store.zoomRatio = zoom;
             zoomNumberDomBind();
@@ -3951,7 +3952,7 @@ define([
     }
     function refresh(options = {}) {
         // luckysheetrefreshgrid();
-        jfrefreshgrid();
+        Store.refreshRange();
         let {success} = { ...options };
         if (success && typeof success === 'function') {
             success();
@@ -4112,15 +4113,7 @@ define([
         return ctr;
     }
     function getAllSheets() {
-        let data = $.extend(true, [], Store.luckysheetfile);
-        data.forEach((item, index, arr) => {
-            if (item.data != null && item.data.length > 0) {
-                item.celldata = sheetmanage.getGridData(item.data);
-            }
-            delete item.load;
-            delete item.freezen;
-        });
-        return data;
+        return Store.getAllSheets();
     }
     function getSheet(options = {}) {
         let {index, order, name} = { ...options };
@@ -4171,11 +4164,13 @@ define([
         if (file.index == Store.currentSheetIndex) {
             Store.config = cfg;
             if ('rowhidden' in cfg || 'colhidden' in cfg || 'rowlen' in cfg || 'columnlen' in cfg) {
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                //jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             }
-            setTimeout(function () {
-                luckysheetrefreshgrid();
-            }, 1);
+            ///setTimeout(function () {
+            ///    luckysheetrefreshgrid();
+            ///}, 1);
+            Store.refresh();
         }
         if (success && typeof success === 'function') {
             success();
@@ -4622,19 +4617,7 @@ define([
         return sheetmanage.buildGridData({ celldata: celldata });
     }
     function toJson() {
-        const toJsonOptions = Store.toJsonOptions;    // Workbook name
-        // Workbook name
-        toJsonOptions.title = $('#luckysheet_info_detail_input').val();
-        toJsonOptions.data = getAllSheets();    // row and column
-        // row and column
-        getluckysheetfile().forEach((file, index) => {
-            if (file.data == undefined) {
-                return;
-            }
-            toJsonOptions.data[index].row = getObjType(file.data) === 'array' ? file.data.length : 0;
-            toJsonOptions.data[index].column = getObjType(file.data[0]) === 'array' ? file.data[0].length : 0;
-        });
-        return toJsonOptions;
+        return Store.toJson();
     }
     function changLang(lang = 'zh') {
         if (![
@@ -4649,10 +4632,10 @@ define([
         luckysheet.create(options);
     }
     function closeWebsocket() {
-        if (server.websocket == null) {
+        if (Store.websocket == null) {
             return;
         }
-        server.websocket.close(1000);
+        Store.websocket.close(1000);
     }
     function getRangeByTxt(txt) {
         // 默认取当前第一个范围
@@ -4675,32 +4658,7 @@ define([
         }
         return conditionformat.getTxtByRange(range);
     }
-    function pagerInit(config) {
-        $('#luckysheet-bottom-pager').remove();
-        $('#luckysheet-sheet-area').append('<div id="luckysheet-bottom-pager" style="font-size: 14px; margin-left: 10px; display: inline-block;"></div>');
-        $('#luckysheet-bottom-pager').sPage({
-            page: config.pageIndex,
-            //当前页码，必填
-            total: config.total,
-            //数据总条数，必填
-            selectOption: config.selectOption,
-            // 选择每页的行数，
-            pageSize: config.pageSize,
-            //每页显示多少条数据，默认10条
-            showTotal: true,
-            // 是否显示总数
-            showSkip: config.showSkip || true,
-            //是否显示跳页，默认关闭：false
-            showPN: config.showPN || true,
-            //是否显示上下翻页，默认开启：true
-            backFun: function (page) {
-                page.pageIndex = page.page;
-                if (!method.createHookFunction('onTogglePager', page)) {
-                    return;
-                }
-            }
-        });
-    }
+
     function refreshFormula(success) {
         formula.execFunctionGroupForce(true);
         luckysheetrefreshgrid();
@@ -4826,7 +4784,7 @@ define([
         closeWebsocket: closeWebsocket,
         getRangeByTxt: getRangeByTxt,
         getTxtByRange: getTxtByRange,
-        pagerInit: pagerInit,
+        ///pagerInit: pagerInit,
         refreshFormula: refreshFormula,
         refreshMenuButtonFocus: refreshMenuButtonFocus
     };

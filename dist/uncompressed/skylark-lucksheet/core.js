@@ -3,9 +3,9 @@ define([
     './utils/util',
     './store',
     './controllers/server',
-    './controllers/luckysheetConfigsetting',
+    './methods/luckysheetConfigsetting',
     './controllers/sheetmanage',
-    './controllers/resize',
+    './widgets/resize',
     './controllers/handler',
     './controllers/filter',
     './controllers/matrixOperation',
@@ -17,15 +17,15 @@ define([
     './controllers/expendPlugins',
     './methods/get',
     './methods/set',
-    './global/refresh',
+    './controllers/refresh',
     './function/functionlist',
-    './controllers/constant',
-    './global/getdata',
-    './global/setdata',
-    './controllers/select',
+    './widgets/constant',
+    './methods/getdata',
+    './methods/setdata',
+    './widgets/select',
     './controllers/zoom',
     './controllers/print',
-    './global/method',
+    './widgets/method',
     './global/api',
     './vendors/flatpickr',
 ///    'flatpickr/dist/l10n/zh.js',
@@ -82,13 +82,13 @@ define([
         Store.limitSheetNameLength = extendsetting.limitSheetNameLength;
         Store.defaultSheetNameMaxLength = extendsetting.defaultSheetNameMaxLength;
         Store.fontList = extendsetting.fontList;
-        server.gridKey = extendsetting.gridKey;
-        server.loadUrl = extendsetting.loadUrl;
-        server.updateUrl = extendsetting.updateUrl;
-        server.updateImageUrl = extendsetting.updateImageUrl;
-        server.title = extendsetting.title;
-        server.loadSheetUrl = extendsetting.loadSheetUrl;
-        server.allowUpdate = extendsetting.allowUpdate;
+        Store.gridKey = extendsetting.gridKey;
+        Store.loadUrl = extendsetting.loadUrl;
+        Store.updateUrl = extendsetting.updateUrl;
+        Store.updateImageUrl = extendsetting.updateImageUrl;
+        Store.title = extendsetting.title;
+        Store.loadSheetUrl = extendsetting.loadSheetUrl;
+        Store.allowUpdate = extendsetting.allowUpdate;
         luckysheetConfigsetting.autoFormatw = extendsetting.autoFormatw;
         luckysheetConfigsetting.accuracy = extendsetting.accuracy;
         luckysheetConfigsetting.total = extendsetting.data[0].total;
@@ -131,8 +131,8 @@ define([
         luckysheetConfigsetting.hook = extendsetting.hook;
         luckysheetConfigsetting.pager = extendsetting.pager;
         luckysheetConfigsetting.initShowsheetbarConfig = false;
-        if (Store.lang === 'zh')
-            flatpickr.localize(Mandarin.zh);    // Store the currently used plugins for monitoring asynchronous loading
+        ///if (Store.lang === 'zh') //TODO: lwf
+        ///    flatpickr.localize(Mandarin.zh);
         // Store the currently used plugins for monitoring asynchronous loading
         Store.asyncLoad.push(...luckysheetConfigsetting.plugins);    // Register plugins
         // Register plugins
@@ -186,20 +186,20 @@ define([
         printInitial();    //print initialization
         //print initialization
         initListener();
-    }    //获取所有表格数据
+    } 
     //获取所有表格数据
-    luckysheet.getluckysheetfile = getluckysheetfile;    //获取当前表格 选区
+    luckysheet.getluckysheetfile = getluckysheetfile;  
     //获取当前表格 选区
-    luckysheet.getluckysheet_select_save = getluckysheet_select_save;    //设置当前表格 选区
+    luckysheet.getluckysheet_select_save = getluckysheet_select_save;  
     //设置当前表格 选区
-    luckysheet.setluckysheet_select_save = setluckysheet_select_save;    //获取当前表格 config配置
+    luckysheet.setluckysheet_select_save = setluckysheet_select_save;   
     //获取当前表格 config配置
-    luckysheet.getconfig = getconfig;    //二维数组数据 转化成 {r, c, v}格式 一维数组 (传入参数为二维数据data)
+    luckysheet.getconfig = getconfig;   
     //二维数组数据 转化成 {r, c, v}格式 一维数组 (传入参数为二维数据data)
-    luckysheet.getGridData = sheetmanage.getGridData;    //生成表格所需二维数组 （传入参数为表格数据对象file）
+    luckysheet.getGridData = sheetmanage.getGridData;  
     //生成表格所需二维数组 （传入参数为表格数据对象file）
-    luckysheet.buildGridData = sheetmanage.buildGridData;    // Refresh the canvas display data according to scrollHeight and scrollWidth
-    // Refresh the canvas display data according to scrollHeight and scrollWidth
+    luckysheet.buildGridData = sheetmanage.buildGridData;    
+     // Refresh the canvas display data according to scrollHeight and scrollWidth
     luckysheet.luckysheetrefreshgrid = luckysheetrefreshgrid;    // Refresh canvas
     // Refresh canvas
     luckysheet.jfrefreshgrid = jfrefreshgrid;    // Get the value of the cell

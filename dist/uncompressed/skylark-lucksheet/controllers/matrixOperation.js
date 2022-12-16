@@ -1,16 +1,18 @@
 define([
     './selection',
+    '../methods/luckysheetConfigsetting',
     '../utils/util',
-    '../global/validate',
-    '../global/getdata',
-    '../global/tooltip',
-    '../global/editor',
+    '../methods/validate',
+    '../methods/getdata',
+    '../widgets/tooltip',
+    './editor',
     '../locale/locale',
     '../store'
-], function (selection, m_util, m_validate, m_getdata, tooltip, editor, locale, Store) {
+], function (selection, luckysheetConfigsetting,m_util, m_validate, m_getdata, tooltip, editor, locale, Store) {
     'use strict';
     const {getObjType, chatatABC, numFormat, luckysheetContainerFocus} = m_util;
-    const {hasPartMC, isEditMode} = m_validate;
+    const {hasPartMC} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {getdatabyselection, getcellvalue} = m_getdata;
     function initialMatrixOperation() {
         const locale_drag = locale().drag;    //右键功能键

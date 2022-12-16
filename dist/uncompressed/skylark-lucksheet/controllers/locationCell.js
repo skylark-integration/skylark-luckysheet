@@ -1,18 +1,20 @@
 define([
     '../utils/util',
     '../methods/get',
-    '../global/validate',
-    '../global/tooltip',
-    './constant',
-    './select',
+    '../methods/validate',
+    '../widgets/tooltip',
+    '../widgets/constant',
+    '../widgets/select',
+    '../methods/luckysheetConfigsetting',
     './conditionformat',
     '../store',
     '../locale/locale'
-], function (m_util, m_get, m_validate, tooltip, m_constant, m_select, conditionformat, Store, locale) {
+], function (m_util, m_get, m_validate, tooltip, m_constant, m_select,luckysheetConfigsetting, conditionformat, Store, locale) {
     'use strict';
     const {replaceHtml} = m_util;
     const {getSheetIndex} = m_get;
-    const {isRealNull, isEditMode} = m_validate;
+    const {isRealNull} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {modelHTML} = m_constant;
     const {selectHightlightShow} = m_select;
     //定位

@@ -1,17 +1,214 @@
 define([
-    '../controllers/constant',
-    '../controllers/menuButton',
-    '../global/datecontroll',
-    '../global/validate',
+    '../widgets/constant',
+    ///'../controllers/menuButton',
     '../store',
     '../locale/locale',
     '../vendors/numeral'
-], function (m_constant, menuButton, m_datecontroll, m_validate, Store, locale, numeral) {
+], function (
+    m_constant, 
+    ///menuButton, 
+    Store, 
+    locale, 
+    numeral
+) {
     'use strict';
+
     const {columeHeader_word, columeHeader_word_index, luckysheetdefaultFont} = m_constant;
-    const {isdatatype, isdatatypemulti} = m_datecontroll;
-    const {hasChinaword, isRealNum} = m_validate;
-    // import method from '../global/method';
+
+    // from ../controllers/inlineString
+
+    function convertCssToStyleList(cssText) {
+        if (cssText == null || cssText.length == 0) {
+            return {};
+        }
+        let cssTextArray = cssText.split(';');
+        const _locale = locale();
+        const locale_fontarray = _locale.fontarray;
+        const locale_fontjson = _locale.fontjson;
+        let styleList = {
+            'ff': locale_fontarray[0],
+            //font family
+            'fc': '#000000',
+            //font color
+            'fs': 10,
+            //font size
+            'cl': 0,
+            //strike
+            'un': 0,
+            //underline
+            'bl': 0,
+            //blod
+            'it': 0
+        };
+        //italic
+        cssTextArray.forEach(s => {
+            s = s.toLowerCase();
+            let key = textTrim(s.substr(0, s.indexOf(':')));
+            let value = textTrim(s.substr(s.indexOf(':') + 1));
+            if (key == 'font-weight') {
+                if (value == 'bold') {
+                    styleList['bl'] = 1;
+                } else {
+                    styleList['bl'] = 0;
+                }
+            }
+            if (key == 'font-style') {
+                if (value == 'italic') {
+                    styleList['it'] = 1;
+                } else {
+                    styleList['it'] = 0;
+                }
+            }
+            if (key == 'font-family') {
+                let ff = locale_fontjson[value];
+                if (ff == null) {
+                    styleList['ff'] = value;
+                } else {
+                    styleList['ff'] = ff;
+                }
+            }
+            if (key == 'font-size') {
+                styleList['fs'] = parseInt(value);
+            }
+            if (key == 'color') {
+                styleList['fc'] = value;
+            }
+            if (key == 'text-decoration') {
+                styleList['cl'] = 1;
+            }
+            if (key == 'border-bottom') {
+                styleList['un'] = 1;
+            }
+            if (key == 'lucky-strike') {
+                styleList['cl'] = value;
+            }
+            if (key == 'lucky-underline') {
+                styleList['un'] = value;
+            }
+        });
+        return styleList;
+    }
+
+    function convertSpanToShareString($dom) {
+        let styles = [], preStyleList, preStyleListString = null;
+        for (let i = 0; i < $dom.length; i++) {
+            let span = $dom.get(i);
+            let styleList = convertCssToStyleList(span.style.cssText);
+            let curStyleListString = JSON.stringify(styleList);    // let v = span.innerHTML;
+            // let v = span.innerHTML;
+            let v = span.innerText;
+            v = v.replace(/\n/g, '\r\n');
+            if (curStyleListString == preStyleListString) {
+                preStyleList.v += v;
+            } else {
+                styleList.v = v;
+                styles.push(styleList);
+                preStyleListString = curStyleListString;
+                preStyleList = styleList;
+            }
+        }
+        return styles;
+    }
+
+    // from ../global/getdata
+    function textTrim(x) {
+        if (x == null || x.length == 0) {
+            return x;
+        }
+        return x.replace(/^\s+|\s+$/gm, '');
+    }
+
+    function isdatetime(s) {
+        if (s == null || s.toString().length < 5) {
+            return false;
+        } else if (checkDateTime(s)) {
+            return true;
+        } else {
+            return false;
+        }
+        function checkDateTime(str) {
+            var reg1 = /^(\d{4})-(\d{1,2})-(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
+            var reg2 = /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
+            if (!reg1.test(str) && !reg2.test(str)) {
+                return false;
+            }
+            var year = RegExp.$1, month = RegExp.$2, day = RegExp.$3;
+            if (year < 1900) {
+                return false;
+            }
+            if (month > 12) {
+                return false;
+            }
+            if (day > 31) {
+                return false;
+            }
+            if (month == 2) {
+                if (new Date(year, 1, 29).getDate() == 29 && day > 29) {
+                    return false;
+                } else if (new Date(year, 1, 29).getDate() != 29 && day > 28) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    function isdatatypemulti(s) {
+        let type = {};
+        if (isdatetime(s)) {
+            type['date'] = true;
+        }
+        if (!isNaN(parseFloat(s)) && !hasChinaword(s)) {
+            type['num'] = true;
+        }
+        return type;
+    }
+    function isdatatype(s) {
+        let type = 'string';
+        if (isdatetime(s)) {
+            type = 'date';
+        } else if (!isNaN(parseFloat(s)) && !hasChinaword(s)) {
+            type = 'num';
+        }
+        return type;
+    }
+
+    //数组范围有其它值
+    //是否是空值
+    function isRealNull(val) {
+        if (val == null || val.toString().replace(/\s/g, '') == '') {
+            return true;
+        } else {
+            return false;
+        }
+    }    //是否是纯数字
+    //是否是纯数字
+    function isRealNum(val) {
+        if (val == null || val.toString().replace(/\s/g, '') === '') {
+            return false;
+        }
+        if (typeof val == 'boolean') {
+            return false;
+        }
+        if (!isNaN(val)) {
+            return true;
+        } else {
+            return false;
+        }
+    }    //是否是错误类型
+    //是否是错误类型
+
+    //是否有中文
+    function hasChinaword(s) {
+        let patrn = /[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
+        if (!patrn.exec(s)) {
+            return false;
+        } else {
+            return true;
+        }
+    }    
+
+    // import method from '../widgets/method';
     /**
  * Common tool methods
  */
@@ -87,7 +284,8 @@ define([
         //     return 'element';
         // }
         return map[toString.call(obj)];
-    }    //获取当前日期时间
+    }   
+     //获取当前日期时间
     //获取当前日期时间
     function getNowDateTime(format) {
         let now = new Date();
@@ -388,7 +586,7 @@ define([
                         fontfamily = '"' + fontfamily + '"';
                     }
                     if (fontfamily != null && document.fonts && !document.fonts.check('12px ' + fontfamily)) {
-                        menuButton.addFontTolist(fontfamily);
+                        ////menuButton.addFontTolist(fontfamily); //TODO : lwf
                     }
                 }
                 if (fontfamily == null) {
@@ -840,6 +1038,23 @@ define([
         transformRangeToAbsolute,
         openSelfModel,
         createProxy,
-        arrayRemoveItem
+        arrayRemoveItem,
+
+        //from ../global/validate
+        isRealNull,
+        isRealNum,
+        hasChinaword,
+
+        //from ../global/datecontroll
+        isdatetime,
+        isdatatype,
+        isdatatypemulti,
+
+        //from ../global/getdata
+        textTrim,
+
+        //from ../controllers/inlineString
+        convertCssToStyleList,
+        convertSpanToShareString
     };
 });

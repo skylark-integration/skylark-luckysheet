@@ -1,5 +1,24 @@
-define(function () {
-    'use strict';
+define([
+],function () {
+
+    function getObjType(obj) { //TODO:lwf
+        let toString = Object.prototype.toString;
+        let map = {
+            '[object Boolean]': 'boolean',
+            '[object Number]': 'number',
+            '[object String]': 'string',
+            '[object Function]': 'function',
+            '[object Array]': 'array',
+            '[object Date]': 'date',
+            '[object RegExp]': 'regExp',
+            '[object Undefined]': 'undefined',
+            '[object Null]': 'null',
+            '[object Object]': 'object'
+        };    
+        return map[toString.call(obj)];
+    }   
+
+   'use strict';
     const Store = {
         container: null,
         luckysheetfile: null,
@@ -191,6 +210,22 @@ define(function () {
         },
 
         /// from ./controllers/sheetmanage
+        getGridData : function (d) {
+            let ret = [];
+            for (let r = 0; r < d.length; r++) {
+                for (let c = 0; c < d[0].length; c++) {
+                    if (d[r][c] == null) {
+                        continue;
+                    }
+                    ret.push({
+                        r: r,
+                        c: c,
+                        v: d[r][c]
+                    });
+                }
+            }
+            return ret;
+        },
         getSheetMerge: function () {
             if (Store.config.merge == null) {
                 return null;
@@ -491,14 +526,40 @@ define(function () {
 
 
         // from global/api
+        getluckysheetfile :function (plugin) {
+            // 获取图表数据
+            if (plugin) {
+                Store.luckysheetfile.forEach(file => {
+                    if (!!file.chart) {
+                        file.chart.forEach(chartObj => {
+                            const chartJson = Store.getChartJson(chartObj.chart_id);
+                            chartObj.chartOptions = chartJson;
+                        });
+                    }
+                });
+            }
+            return Store.luckysheetfile;
+        },
+
+        getAllSheets : function () {
+            let data = $.extend(true, [], Store.luckysheetfile);
+            data.forEach((item, index, arr) => {
+                if (item.data != null && item.data.length > 0) {
+                    item.celldata = Store.getGridData(item.data);
+                }
+                delete item.load;
+                delete item.freezen;
+            });
+            return data;
+       },
         toJson : function () {
             const toJsonOptions = Store.toJsonOptions;    // Workbook name
             // Workbook name
             ////toJsonOptions.title = $('#luckysheet_info_detail_input').val(); 
             toJsonOptions.title = Store.title; //TODO:lwf
-            toJsonOptions.data = getAllSheets();    // row and column
+            toJsonOptions.data = Store.getAllSheets();    // row and column
             // row and column
-            getluckysheetfile().forEach((file, index) => {
+            Store.getluckysheetfile().forEach((file, index) => {
                 if (file.data == undefined) {
                     return;
                 }
@@ -517,7 +578,17 @@ define(function () {
             }
 
         },
+        // from global/resize
+        invalidate : function() {
+            if (this.onInvalidate) {
+               setTimeout(()=>{
+                 this.onInvalidate();
+                }, 1);
+            }
 
+        },
+
+        //from controllers/freezen
         //from controllers/freezen
         freezenhorizontaldata: null,
         freezenverticaldata: null,

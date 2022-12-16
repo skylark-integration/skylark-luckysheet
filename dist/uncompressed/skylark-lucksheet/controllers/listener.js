@@ -1,10 +1,10 @@
 define([
     '../utils/util',
     '../store',
-    '../global/method',
+    '../methods/luckysheetConfigsetting',
     '../methods/get',
     '../global/api'
-], function (m_util, Store, method, m_get, m_api) {
+], function (m_util, Store, luckysheetConfigsetting, m_get, m_api) {
     'use strict';
     const {createProxy} = m_util;
     const {getluckysheetfile} = m_get;
@@ -14,12 +14,12 @@ define([
         createProxy(Store, 'jfredo', (target, property, val, receiver) => {
             if (property !== 'length') {
                 //  钩子函数
-                method.createHookFunction('updated', val);
+                luckysheetConfigsetting.createHookFunction('updated', val);
             }
         });
         createProxy(Store, 'asyncLoad', (target, property, val, receiver) => {
             if (property === 'length' && val === 0) {
-                method.createHookFunction('workbookCreateAfter', toJson());
+                luckysheetConfigsetting.createHookFunction('workbookCreateAfter', toJson());
             }
         });
     };

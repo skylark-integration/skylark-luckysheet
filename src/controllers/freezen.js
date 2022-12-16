@@ -149,7 +149,7 @@ define([
                 }
             }
             if (Store.freezenhorizontaldata != null) {
-                let freezen_rowindex = store.freezenhorizontaldata[1];
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
                 let offset = luckysheet_searcharray(Store.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop());
                 let left = Store.freezenhorizontaldata[4];
                 freezen_rowindex += offset;

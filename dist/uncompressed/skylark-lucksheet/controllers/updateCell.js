@@ -1,32 +1,28 @@
 define([
-    './pivotTable',
-    './freezen',
-    './menuButton',
-    './conditionformat',
-    './alternateformat',
-    './cellDatePickerCtrl',
-    './dataVerificationCtrl',
-    './protection',
+    '../methods/pivotTable_methods',
+    '../methods/cells',
+    '../methods/conditionformat_methods',
+    '../methods/alternateformat_methods',
+    '../widgets/cellDatePickerCtrl',
+    '../widgets/dataVerificationCtrl',
+    '../methods/protection_methods',
     '../utils/util',
-    '../global/validate',
-    '../global/getdata',
-    '../global/format',
-    '../global/formula',
-    '../global/cursorPos',
-    '../global/cleargridelement',
-    './inlineString',
-    '../store',
-    './server',
-    '../global/method'
-], function (pivotTable, luckysheetFreezen, menuButton, conditionformat, alternateformat, cellDatePickerCtrl, dataVerificationCtrl, m_protection, m_util, m_validate, m_getdata, m_format, formula, m_cursorPos, cleargridelement, m_inlineString, Store, server, method) {
+    '../methods/luckysheetConfigsetting',
+    '../methods/getdata',
+    '../methods/format',
+    '../methods/formula_methods',
+    '../widgets/cursorPos',
+    '../widgets/cleargridelement',
+    '../store'
+], function (pivotTable, cells, conditionformat, alternateformat, cellDatePickerCtrl, dataVerificationCtrl, m_protection, m_util, luckysheetConfigsetting, m_getdata, m_format, formula, m_cursorPos, cleargridelement, Store) {
     'use strict';
     const {checkProtectionLocked, checkProtectionCellHidden} = m_protection;
     const {chatatABC} = m_util;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {getcellvalue, getInlineStringStyle} = m_getdata;
     const {valueShowEs} = m_format;
     const {luckysheetRangeLast} = m_cursorPos;
-    const {isInlineStringCell} = m_inlineString;
+    const {isInlineStringCell} = cells;
     function luckysheetupdateCell(row_index1, col_index1, d, cover, isnotfocus) {
         if (!checkProtectionLocked(row_index1, col_index1, Store.currentSheetIndex)) {
             $('#luckysheet-functionbox-cell').blur();
@@ -37,15 +33,15 @@ define([
             return;
         }    // 钩子函数
         // 钩子函数
-        method.createHookFunction('cellEditBefore', Store.luckysheet_select_save);    // 编辑单元格时发送指令到后台，通知其他单元格更新为“正在输入”状态
+        luckysheetConfigsetting.createHookFunction('cellEditBefore', Store.luckysheet_select_save);    // 编辑单元格时发送指令到后台，通知其他单元格更新为“正在输入”状态
         // 编辑单元格时发送指令到后台，通知其他单元格更新为“正在输入”状态
-        server.saveParam('mv', Store.currentSheetIndex, {
+        Store.saveParam('mv', Store.currentSheetIndex, {
             op: 'enterEdit',
             range: Store.luckysheet_select_save
         });    //数据验证
         //数据验证
-        if (dataVerificationCtrl.dataVerification != null && dataVerificationCtrl.dataVerification[row_index1 + '_' + col_index1] != null) {
-            let dataVerificationItem = dataVerificationCtrl.dataVerification[row_index1 + '_' + col_index1];
+        if (Store.dataVerification != null && Store.dataVerification[row_index1 + '_' + col_index1] != null) {
+            let dataVerificationItem = Store.dataVerification[row_index1 + '_' + col_index1];
             if (dataVerificationItem.type == 'dropdown') {
                 dataVerificationCtrl.dropdownListShow();
             } else if (dataVerificationItem.type == 'checkbox') {
@@ -65,11 +61,11 @@ define([
             return;
         }
         let left = col_pre + container_offset.left + Store.rowHeaderWidth - scrollLeft - 2;
-        if (luckysheetFreezen.freezenverticaldata != null && col_index1 <= luckysheetFreezen.freezenverticaldata[1]) {
+        if (Store.freezenverticaldata != null && col_index1 <= Store.freezenverticaldata[1]) {
             left = col_pre + container_offset.left + Store.rowHeaderWidth - 2;
         }
         let top = row_pre + container_offset.top + Store.infobarHeight + Store.toolbarHeight + Store.calculatebarHeight + Store.columnHeaderHeight - scrollTop - 2;
-        if (luckysheetFreezen.freezenhorizontaldata != null && row_index1 <= luckysheetFreezen.freezenhorizontaldata[1]) {
+        if (Store.freezenhorizontaldata != null && row_index1 <= Store.freezenhorizontaldata[1]) {
             top = row_pre + container_offset.top + Store.infobarHeight + Store.toolbarHeight + Store.calculatebarHeight + Store.columnHeaderHeight - 2;
         }
         let input_postition = {
@@ -102,7 +98,7 @@ define([
             'box-sizing': 'initial',
             'display': 'flex'
         });
-        if (luckysheetFreezen.freezenverticaldata != null || luckysheetFreezen.freezenhorizontaldata != null) {
+        if (Store.freezenverticaldata != null || Store.freezenhorizontaldata != null) {
             $('#luckysheet-input-box').css('z-index', 10002);
         }
         $('#luckysheet-input-box-index').html(chatatABC(col_index) + (row_index + 1)).hide();
@@ -161,7 +157,7 @@ define([
                     }
                 }
             }
-            let style = menuButton.getStyleByCell(d, row_index, col_index);
+            let style = cells.getStyleByCell(d, row_index, col_index);
             style = $('#luckysheet-input-box').get(0).style.cssText + style;
             $('#luckysheet-input-box').get(0).style.cssText = style;
             if ($('#luckysheet-input-box').get(0).style.backgroundColor == 'rgba(0, 0, 0, 0)') {
@@ -266,7 +262,7 @@ define([
         if (d == null) {
             d = Store.flowdata;
         }
-        let margeset = menuButton.mergeborer(d, row_index, col_index);
+        let margeset = cells.mergeborer(d, row_index, col_index);
         if (!!margeset) {
             row = margeset.row[1];
             row_pre = margeset.row[0];

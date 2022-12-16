@@ -1,150 +1,34 @@
 define([
     'skylark-pako',
-    '../global/loading',
-    '../global/refresh',
-    '../global/editor',
-    './constant',
-    './sheetmanage',
-    './menuButton',
+    'skylark-localForage',
+    '../widgets/loading',
+    '../widgets/constant',
+    '../methods/sheets',
+    '../methods/cells',
     './filter',
     './freezen',
     './postil',
-    './imageCtrl',
-    './dataVerificationCtrl',
-    './hyperlinkCtrl',
+    '../widgets/imageCtrl',
+    '../widgets/dataVerificationCtrl',
+    '../widgets/hyperlinkCtrl',
     '../utils/util',
     '../methods/get',
     '../store',
-    './select',
+    '../widgets/select',
     '../locale/locale',
     'skylark-moment',
-    '../global/json'
-], function (pako, m_loading, m_refresh, editor, m_constant, sheetmanage, menuButton, m_filter, luckysheetFreezen, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, m_util, m_get, Store, m_select, locale, dayjs, json) {
+    '../methods/json'
+], function (pako,localforage, m_loading,  m_constant, sheets, cells, m_filter, luckysheetFreezen, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, m_util, m_get, Store, m_select, locale, dayjs, json) {
     'use strict';
     const {showloading, hideloading} = m_loading;
-    const {luckysheetrefreshgrid, jfrefreshgrid_rhcw} = m_refresh;
     const {sheetHTML, luckyColor} = m_constant;
     const {createFilterOptions} = m_filter;
     const {getObjType, replaceHtml, getByteLen} = m_util;
     const {getSheetIndex} = m_get;
     const {collaborativeEditBox} = m_select;
     const server = {
-        gridKey: null,
-        loadUrl: null,
-        updateUrl: null,
-        updateImageUrl: null,
-        title: null,
-        loadSheetUrl: null,
+
         retryTimer: null,
-        allowUpdate: false,
-        //共享编辑模式
-        historyParam: function (data, sheetIndex, range) {
-            let _this = this;
-            let r1 = range.row[0], r2 = range.row[1];
-            let c1 = range.column[0], c2 = range.column[1];
-            if (r1 == r2 && c1 == c2) {
-                //单个单元格更新
-                let v = data[r1][c1];
-                _this.saveParam('v', sheetIndex, v, {
-                    'r': r1,
-                    'c': c1
-                });
-            } else {
-                //范围单元格更新
-                let rowlen = r2 - r1 + 1;
-                let collen = c2 - c1 + 1;
-                let timeR = Math.floor(1000 / collen);
-                let n = Math.ceil(rowlen / timeR);    //分批次更新，一次最多1000个单元格
-                //分批次更新，一次最多1000个单元格
-                for (let i = 0; i < n; i++) {
-                    let str = r1 + timeR * i;
-                    let edr;
-                    if (i == n - 1) {
-                        edr = r2;
-                    } else {
-                        edr = r1 + timeR * (i + 1) - 1;
-                    }
-                    let v = [];
-                    for (let r = str; r <= edr; r++) {
-                        let v_row = [];
-                        for (let c = c1; c <= c2; c++) {
-                            if (data[r] == null) {
-                                v_row.push(null);
-                            } else {
-                                v_row.push(data[r][c]);
-                            }
-                        }
-                        v.push(v_row);
-                    }
-                    _this.saveParam('rv', sheetIndex, v, {
-                        'range': {
-                            'row': [
-                                str,
-                                edr
-                            ],
-                            'column': [
-                                c1,
-                                c2
-                            ]
-                        }
-                    });
-                    if (i == n - 1) {
-                        _this.saveParam('rv_end', sheetIndex, null);
-                    }
-                }
-            }
-        },
-        saveParam: function (type, index, value, params) {
-            let _this = this;
-            if (!_this.allowUpdate) {
-                return;
-            }
-            if (value == undefined) {
-                value = null;
-            }
-            let d = {};
-            d.t = type;
-            d.i = index;
-            d.v = value;    //切换sheet页不发后台，TODO：改为发后台+后台不广播 
-            //切换sheet页不发后台，TODO：改为发后台+后台不广播 
-            if (type === 'shs') {
-                return;
-            }
-            if (type == 'rv') {
-                //单元格批量更新
-                d.range = params.range;
-            } else if (type == 'v' || type == 'fu' || type == 'fm') {
-                d.r = params.r;
-                d.c = params.c;
-            } else if (type == 'fc') {
-                d.op = params.op;
-                d.pos = params.pos;
-            } else if (type == 'drc' || type == 'arc' || type == 'h' || type == 'wh') {
-                d.rc = params.rc;
-            } else if (type == 'c') {
-                d.cid = params.cid;
-                d.op = params.op;
-            } else if (type == 'f') {
-                d.op = params.op;
-                d.pos = params.pos;
-            } else if (type == 's') {
-            } else if (type == 'sh') {
-                d.op = params.op;
-                if (params.cur != null) {
-                    d.cur = params.cur;
-                }
-            } else if (type == 'cg') {
-                d.k = params.k;
-            } else if (type == 'all') {
-                d.k = params.k;    // d.s = params.s;
-            }
-            // d.s = params.s;
-            let msg = pako.gzip(encodeURIComponent(JSON.stringify(d)), { to: 'string' });
-            if (_this.websocket != null) {
-                _this.websocket.send(msg);
-            }
-        },
-        websocket: null,
         wxErrorCount: 0,
         openWebSocket: function () {
             let _this = this;
@@ -153,19 +37,19 @@ define([
                 if (_this.updateUrl.indexOf('?') > -1) {
                     wxUrl = _this.updateUrl + '&t=111&g=' + encodeURIComponent(_this.gridKey);
                 }
-                _this.websocket = new WebSocket(wxUrl);    //连接建立时触发
+                Store.websocket = new WebSocket(wxUrl);    //连接建立时触发
                 //连接建立时触发
-                _this.websocket.onopen = function () {
+                Store.websocket.onopen = function () {
                     console.info(locale().websocket.success);
                     hideloading();
                     _this.wxErrorCount = 0;    //防止websocket长时间不发送消息导致断连
                     //防止websocket长时间不发送消息导致断连
                     _this.retryTimer = setInterval(function () {
-                        _this.websocket.send('rub');
+                        Store.websocket.send('rub');
                     }, 60000);
-                };    //客户端接收服务端数据时触发
+                };  
                 //客户端接收服务端数据时触发
-                _this.websocket.onmessage = function (result) {
+                Store.websocket.onmessage = function (result) {
                     Store.result = result;
                     let data = new Function('return ' + result.data)();
                     console.info(data);
@@ -324,7 +208,7 @@ define([
                     }
                 };    //通信发生错误时触发
                 //通信发生错误时触发
-                _this.websocket.onerror = function () {
+                Store.websocket.onerror = function () {
                     _this.wxErrorCount++;
                     if (_this.wxErrorCount > 3) {
                         showloading(locale().websocket.refresh);
@@ -334,7 +218,7 @@ define([
                     }
                 };    //连接关闭时触发
                 //连接关闭时触发
-                _this.websocket.onclose = function (e) {
+                Store.websocket.onclose = function (e) {
                     console.info(locale().websocket.close);
                     if (e.code === 1000) {
                         clearInterval(_this.retryTimer);
@@ -376,7 +260,7 @@ define([
                 if (index == Store.currentSheetIndex) {
                     //更新数据为当前表格数据
                     Store.flowdata = file.data;
-                    editor.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
+                    Store.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
                                                                       //如果更新的单元格有批注
                     //worker存数据
                     //如果更新的单元格有批注
@@ -385,9 +269,10 @@ define([
                     } else {
                         luckysheetPostil.buildPs(r, c, null);
                     }
-                    setTimeout(function () {
-                        luckysheetrefreshgrid();
-                    }, 1);
+                    ///setTimeout(function () {
+                    ///    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
                 }
             } else if (type == 'rv') {
                 //范围单元格数据更新
@@ -409,7 +294,7 @@ define([
                 if (index == Store.currentSheetIndex) {
                     //更新数据为当前表格数据
                     Store.flowdata = file.data;
-                    editor.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
+                    Store.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
                                                                       //如果更新的单元格有批注
                     //worker存数据
                     //如果更新的单元格有批注
@@ -422,9 +307,10 @@ define([
                             }
                         }
                     }
-                    setTimeout(function () {
-                        luckysheetrefreshgrid();
-                    }, 1);
+                    ///setTimeout(function () {
+                    ////    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
                 }
             } else if (type == 'cg') {
                 //config更新（rowhidden，rowlen，columnlen，merge，borderInfo）
@@ -443,11 +329,13 @@ define([
                     //更新数据为当前表格数据
                     Store.config = file['config'];
                     if (k == 'rowlen' || k == 'columnlen' || k == 'rowhidden') {
-                        jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                        ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                        Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                     }
-                    setTimeout(function () {
-                        luckysheetrefreshgrid();
-                    }, 1);
+                    ///setTimeout(function () {
+                    ////    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
                 }
             } else if (type == 'all') {
                 //通用保存更新
@@ -473,14 +361,14 @@ define([
                         const locale_freezen = _locale.freezen;
                         if (file['freezen'].horizontal == null) {
                             $('#luckysheet-freezen-btn-horizontal').html('<i class="fa fa-list-alt"></i> ' + locale_freezen.freezenRow);
-                            luckysheetFreezen.freezenhorizontaldata = null;
+                            Store.freezenhorizontaldata = null;
                             $('#luckysheet-freezebar-horizontal').hide();
                         } else {
                             luckysheetFreezen.createFreezenHorizontal(file['freezen'].horizontal.freezenhorizontaldata, file['freezen'].horizontal.top);
                         }
                         if (file['freezen'].vertical == null) {
                             $('#luckysheet-freezen-btn-vertical').html('<i class="fa fa-indent"></i> ' + locale_freezen.freezenColumn);
-                            luckysheetFreezen.freezenverticaldata = null;
+                            Store.freezenverticaldata = null;
                             $('#luckysheet-freezebar-vertical').hide();
                         } else {
                             luckysheetFreezen.createFreezenVertical(file['freezen'].vertical.freezenverticaldata, file['freezen'].vertical.left);
@@ -500,30 +388,32 @@ define([
                 } else if (k == 'luckysheet_conditionformat_save') {
                     //条件格式
                     if (index == Store.currentSheetIndex) {
-                        setTimeout(function () {
-                            luckysheetrefreshgrid();
-                        }, 1);
+                        ///setTimeout(function () {
+                        ////    luckysheetrefreshgrid();
+                        ///}, 1);
+                        Store.refresh();
                     }
                 } else if (k == 'luckysheet_alternateformat_save') {
                     //交替颜色
                     if (index == Store.currentSheetIndex) {
-                        setTimeout(function () {
-                            luckysheetrefreshgrid();
-                        }, 1);
+                        ///setTimeout(function () {
+                        ////    luckysheetrefreshgrid();
+                        ///}, 1);
+                        Store.refresh();
                     }
                 } else if (k == 'config') {
                     //config
                     if (index == Store.currentSheetIndex) {
                         Store.config = value;
-                        jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                        ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                        Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                     }
                 } else if (k == 'dynamicArray') {
                     //动态数组
-                    if (index == Store.currentSheetIndex) {
-                        setTimeout(function () {
-                            luckysheetrefreshgrid();
-                        }, 1);
-                    }
+                        ///setTimeout(function () {
+                        ////    luckysheetrefreshgrid();
+                        ///}, 1);
+                        Store.refresh();
                 } else if (k == 'images') {
                     //图片
                     if (index == Store.currentSheetIndex) {
@@ -534,7 +424,7 @@ define([
                 } else if (k == 'dataVerification') {
                     //数据验证
                     if (index == Store.currentSheetIndex) {
-                        dataVerificationCtrl.dataVerification = value;
+                        Store.dataVerification = value;
                         dataVerificationCtrl.init();
                     }
                 } else if (k == 'hyperlink') {
@@ -574,9 +464,10 @@ define([
                 //         }
                 //     }
                 // }
-                setTimeout(function () {
-                    luckysheetrefreshgrid();
-                }, 1);
+                    ///setTimeout(function () {
+                    ////    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
             } else if (type == 'drc') {
                 //删除行列
                 if (file.data == null || file.data.length == 0) {
@@ -616,13 +507,14 @@ define([
                 file['config'].borderInfo = borderInfo;
                 if (index == Store.currentSheetIndex) {
                     Store.flowdata = data;
-                    editor.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
+                    Store.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
                     //worker存数据
                     Store.config['merge'] = mc;
                     Store.config['borderInfo'] = borderInfo;
-                    setTimeout(function () {
-                        luckysheetrefreshgrid();
-                    }, 1);
+                    ///setTimeout(function () {
+                    ////    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
                 }
             } else if (type == 'arc') {
                 //增加行列
@@ -670,13 +562,14 @@ define([
                 file['config'].borderInfo = borderInfo;
                 if (index == Store.currentSheetIndex) {
                     Store.flowdata = data;
-                    editor.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
+                    Store.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
                     //worker存数据
                     Store.config['merge'] = mc;
                     Store.config['borderInfo'] = borderInfo;
-                    setTimeout(function () {
-                        luckysheetrefreshgrid();
-                    }, 1);
+                    ///setTimeout(function () {
+                    ////    luckysheetrefreshgrid();
+                    ///}, 1);
+                    Store.refresh();
                 }
             } else if (type == 'f') {
                 //筛选
@@ -748,7 +641,7 @@ define([
                         // 如果删除的是当前sheet，则切换到前一个sheet页
                         if (Store.currentSheetIndex === value.deleIndex) {
                             const index = value.deleIndex;
-                            Store.luckysheetfile[sheetmanage.getSheetIndex(index)].hide = 1;
+                            Store.luckysheetfile[Store.getSheetIndex(index)].hide = 1;
                             let luckysheetcurrentSheetitem = $('#luckysheet-sheets-item' + index);
                             luckysheetcurrentSheetitem.hide();
                             $('#luckysheet-sheet-area div.luckysheet-sheets-item').removeClass('luckysheet-sheets-item-active');
@@ -759,7 +652,7 @@ define([
                                 indicator = luckysheetcurrentSheetitem.prevAll(':visible').eq(0).data('index');
                             }
                             $('#luckysheet-sheets-item' + indicator).addClass('luckysheet-sheets-item-active');
-                            sheetmanage.changeSheetExec(indicator);
+                            Store.changeSheet(indicator);
                         }
                         server.sheetDeleSave.push(Store.luckysheetfile[i]);
                         Store.luckysheetfile.splice(i, 1);
@@ -802,7 +695,7 @@ define([
                     $('#luckysheet-sheets-item' + index).hide();
                     if (index == Store.currentSheetIndex) {
                         $('#luckysheet-sheets-item' + cur).addClass('luckysheet-sheets-item-active');
-                        sheetmanage.changeSheetExec(cur);
+                        Store.changeSheet(cur);
                     }
                 } else if (op == 'show') {
                     file.hide = 0;
@@ -827,7 +720,7 @@ define([
                                     }
                                 }
                             }
-                            sheetmanage.saveChart(chartjson);
+                            sheets.saveChart(chartjson);
                             return;
                         }
                     }
@@ -838,7 +731,7 @@ define([
                         if (chartjson.chart_id == cid) {
                             file.chart.splice(i, 1);
                             $('#' + cid).remove();
-                            sheetmanage.delChart($('#' + cid).attr('chart_id'), $('#' + cid).attr('sheetIndex'));
+                            sheets.delChart($('#' + cid).attr('chart_id'), $('#' + cid).attr('sheetIndex'));
                             return;
                         }
                     }
@@ -852,7 +745,7 @@ define([
         multipleRangeShow: function (id, name, r, c, value) {
             let _this = this;
             let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1], col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-            let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+            let margeset = cells.mergeborer(Store.flowdata, r, c);
             if (!!margeset) {
                 row = margeset.row[1];
                 row_pre = margeset.row[0];
@@ -1025,7 +918,7 @@ define([
                     //console.log(base64);
                     //console.log("压缩：", pako.gzip(base64, { to: "string" }));
                     //console.log("imageRequest");
-                    let curindex = luckysheet.sheetmanage.getCurSheetnoset();
+                    let curindex = Store.getCurSheetnoset();
                     _this.imageRequestLock = true;    // let data1 = pako.gzip(encodeURIComponent(JSON.stringify({"t":"thumb", "img": base64, "curindex":curindex })), { to: "string" });
                     // let data1 = pako.gzip(encodeURIComponent(JSON.stringify({"t":"thumb", "img": base64, "curindex":curindex })), { to: "string" });
                     let data1 = encodeURIComponent(JSON.stringify({

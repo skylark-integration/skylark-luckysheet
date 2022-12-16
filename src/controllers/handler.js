@@ -59,7 +59,8 @@ define([
     const {getSheetIndex, getRangetxt} = m_get;
     const {rowLocation, colLocation, mouseposition} = m_location;
     const {rowlenByRange} = m_getRowlen;
-    const {isRealNull, hasPartMC, isEditMode} = m_validate;
+    const {isRealNull, hasPartMC} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {countfunc} = m_count;
     const {luckysheetextendtable} = m_extend;
     const {getdatabyselection, datagridgrowth} = m_getdata;

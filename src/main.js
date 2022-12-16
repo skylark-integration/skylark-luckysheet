@@ -1,7 +1,9 @@
 define([
     "skylark-langx-ns",
     "skylark-jquery",
-    './core'
+    './core',
+    "skylark-jqueryui",
+    "./vendors/jquery.mousewheel"
 ], function (skylark,$,m_core) {
     'use strict';
     const {luckysheet} = m_core;

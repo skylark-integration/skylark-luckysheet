@@ -1,19 +1,16 @@
 define([
     '../store',
     '../utils/util',
-    './constant',
-    './sheetmanage',
-    './menuButton',
-    './protection',
-    '../global/refresh',
+    '../widgets/constant',
+    '../methods/cells',
+    '../methods/protection_methods',
     '../locale/locale',
-    '../global/setdata'
-], function (Store, m_util, m_constant, sheetmanage, menuButton, m_protection, m_refresh, locale, m_setdata) {
+    '../methods/setdata'
+], function (Store, m_util, m_constant, cells, m_protection, locale, m_setdata) {
     'use strict';
     const {replaceHtml, transformRangeToAbsolute, openSelfModel} = m_util;
     const {modelHTML} = m_constant;
     const {checkProtectionNotEnable} = m_protection;
-    const {jfrefreshgrid} = m_refresh;
     const {setcellvalue} = m_setdata;
     let isInitialCellFormatModel = false;
     function initialCellFormatModelEvent() {
@@ -37,14 +34,16 @@ define([
             }, function () {
                 alert(local_cellFormat.sheetDataIsNullAlert);
             });
-            jfrefreshgrid(d, undefined, undefined, false);
+            ///jfrefreshgrid(d, undefined, undefined, false);
+            Store.refreshRange(d,undefined,undefined,false);
+
             $('#luckysheet-cellFormat-config').hide();
             $('#luckysheet-modal-dialog-mask').hide();
         });
     }
     function recycleSeletion(cycleFunction, dataIsNullFunction) {
         if (Store.luckysheet_select_save != null && Store.luckysheet_select_save.length > 0) {
-            let sheetFile = sheetmanage.getSheetByIndex(), data = sheetFile.data;
+            let sheetFile = Store.getSheetByIndex(), data = sheetFile.data;
             if (data != null) {
                 for (let i = 0; i < Store.luckysheet_select_save.length; i++) {
                     let selection = Store.luckysheet_select_save[i];
@@ -52,7 +51,7 @@ define([
                     for (let r = row[0]; r <= row[1]; r++) {
                         for (let c = column[0]; c <= column[1]; c++) {
                             let cell;
-                            let margeset = menuButton.mergeborer(data, r, c);
+                            let margeset = cells.mergeborer(data, r, c);
                             if (!!margeset) {
                                 // row = margeset.row[1];
                                 // row_pre = margeset.row[0];

@@ -1,22 +1,19 @@
 define([
     '../utils/util',
-    './constant',
-    './select',
-    '../global/tooltip',
-    '../global/editor',
-    '../global/setdata',
-    '../global/getdata',
-    '../global/refresh',
+    '../widgets/constant',
+    '../widgets/select',
+    '../widgets/tooltip',
+    '../methods/setdata',
+    '../methods/getdata',
     '../store',
     '../locale/locale'
-], function (m_util, m_constant, m_select, tooltip, editor, m_setdata, m_getdata, m_refresh, Store, locale) {
+], function (m_util, m_constant, m_select, tooltip, m_setdata, m_getdata,  Store, locale) {
     'use strict';
     const {replaceHtml} = m_util;
     const {modelHTML} = m_constant;
     const {selectHightlightShow} = m_select;
     const {setcellvalue} = m_setdata;
     const {getcellvalue} = m_getdata;
-    const {jfrefreshgrid} = m_refresh;
     //分列
     const luckysheetSplitColumn = {
         createDialog: function () {
@@ -95,7 +92,7 @@ define([
             });
         },
         update: function (r, c, dataArr) {
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             for (let i = 0; i < dataArr.length; i++) {
                 for (let j = 0; j < dataArr[0].length; j++) {
                     let v = dataArr[i][j];
@@ -113,7 +110,7 @@ define([
                         st_c + dataArr[0].length - 1
                     ]
                 }];
-            jfrefreshgrid(d, range);
+            Store.refreshRange(d, range);
             selectHightlightShow();
         },
         dataPreview: function (dataArr) {

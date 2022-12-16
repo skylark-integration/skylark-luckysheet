@@ -1,14 +1,13 @@
 define([
     '../utils/util',
-    '../global/formula',
-    '../global/validate',
-    '../global/count',
-    './menuButton',
-    './select',
+    './formula',
+    '../methods/validate',
+    '../methods/count',
+    "../methods/cells",
+    '../widgets/select',
     './pivotTable',
-    '../store',
-    './server'
-], function (m_util, formula, m_validate, m_count, menuButton, m_select, pivotTable, Store, server) {
+    '../store'
+], function (m_util, formula, m_validate, m_count,cells, m_select, pivotTable, Store) {
     'use strict';
     const {getObjType} = m_util;
     const {isRealNull} = m_validate;
@@ -261,7 +260,7 @@ define([
         } else {
             return moveV;
         }
-    }    //方向键  调整单元格
+    }  
     //方向键  调整单元格
     function luckysheetMoveHighlightCell(postion, index, type, isScroll) {
         if (isScroll == null) {
@@ -286,9 +285,9 @@ define([
                 curC = last['column'][0];
             } else {
                 curC = last['column_focus'];
-            }    //focus单元格 是否是合并单元格
+            } 
             //focus单元格 是否是合并单元格
-            let margeset = menuButton.mergeborer(Store.flowdata, curR, curC);
+            let margeset = cells.mergeborer(Store.flowdata, curR, curC);
             if (!!margeset) {
                 let str_r = margeset.row[2];
                 let end_r = margeset.row[3];
@@ -333,7 +332,7 @@ define([
                 moveY = curC;
             }    //移动的下一个单元格是否是合并的单元格
             //移动的下一个单元格是否是合并的单元格
-            let margeset2 = menuButton.mergeborer(Store.flowdata, curR, curC);
+            let margeset2 = cells.mergeborer(Store.flowdata, curR, curC);
             if (!!margeset2) {
                 row = margeset2.row[1];
                 row_pre = margeset2.row[0];
@@ -368,8 +367,8 @@ define([
                 'y': moveY
             };
             selectHightlightShow();
-            pivotTable.pivotclick(row_index, col_index);
-            formula.fucntionboxshow(row_index, col_index);
+            pivotTable.pivotclick(row_index, col_index); //TODO:lwf
+            formula.fucntionboxshow(row_index, col_index); //TODO:lwf
         } else if (type == 'rangeOfFormula') {
             let last = formula.func_selectedrange;
             let curR;
@@ -385,7 +384,7 @@ define([
                 curC = last['column_focus'];
             }    //focus单元格 是否是合并单元格
             //focus单元格 是否是合并单元格
-            let margeset = menuButton.mergeborer(Store.flowdata, curR, curC);
+            let margeset = cells.mergeborer(Store.flowdata, curR, curC);
             if (!!margeset) {
                 let str_r = margeset.row[2];
                 let end_r = margeset.row[3];
@@ -430,7 +429,7 @@ define([
                 moveY = curC;
             }    //移动的下一个单元格是否是合并的单元格
             //移动的下一个单元格是否是合并的单元格
-            let margeset2 = menuButton.mergeborer(Store.flowdata, curR, curC);
+            let margeset2 = cells.mergeborer(Store.flowdata, curR, curC);
             if (!!margeset2) {
                 row = margeset2.row[1];
                 row_pre = margeset2.row[0];
@@ -520,7 +519,7 @@ define([
         clearTimeout(Store.countfuncTimeout);
         countfunc();    // 移动单元格通知后台
         // 移动单元格通知后台
-        server.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
+        Store.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
     }    //ctrl + 方向键  调整单元格
     //ctrl + 方向键  调整单元格
     function luckysheetMoveHighlightCell2(postion, type, isScroll) {
@@ -586,7 +585,7 @@ define([
             row_pre = rf - 1 == -1 ? 0 : Store.visibledatarow[rf - 1];
             col = Store.visibledatacolumn[cf];
             col_pre = cf - 1 == -1 ? 0 : Store.visibledatacolumn[cf - 1];
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];    // top = changeparam[2];
@@ -664,7 +663,7 @@ define([
             col_pre = cf - 1 == -1 ? 0 : Store.visibledatacolumn[cf - 1];
             let top = row_pre, height = row - row_pre - 1;
             let left = col_pre, width = col - col_pre - 1;
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];
@@ -863,7 +862,7 @@ define([
             row_pre = curR - 1 == -1 ? 0 : Store.visibledatarow[curR - 1];
             col = Store.visibledatacolumn[endC];
             col_pre = curC - 1 == -1 ? 0 : Store.visibledatacolumn[curC - 1];
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];    // top = changeparam[2];
@@ -1006,7 +1005,7 @@ define([
             col_pre = curC - 1 == -1 ? 0 : Store.visibledatacolumn[curC - 1];
             let top = row_pre, height = row - row_pre - 1;
             let left = col_pre, width = col - col_pre - 1;
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];
@@ -1174,7 +1173,7 @@ define([
             row_pre = r1 - 1 == -1 ? 0 : Store.visibledatarow[r1 - 1];
             col = Store.visibledatacolumn[c2];
             col_pre = c1 - 1 == -1 ? 0 : Store.visibledatacolumn[c1 - 1];
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, row_pre, row - row_pre - 1, col_pre, col - col_pre - 1);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];    // top = changeparam[2];
@@ -1289,7 +1288,7 @@ define([
             col_pre = c1 - 1 == -1 ? 0 : Store.visibledatacolumn[c1 - 1];
             let top = row_pre, height = row - row_pre - 1;
             let left = col_pre, width = col - col_pre - 1;
-            let changeparam = menuButton.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
+            let changeparam = cells.mergeMoveMain(columnseleted, rowseleted, last, top, height, left, width);
             if (changeparam != null) {
                 columnseleted = changeparam[0];
                 rowseleted = changeparam[1];

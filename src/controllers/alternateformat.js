@@ -3,18 +3,18 @@ define([
     '../methods/get',
     '../utils/util',
     '../methods/formula_methods',
-    '../methods/validate',
+    '../methods/luckysheetConfigsetting',
     '../widgets/tooltip',
     '../widgets/constant',
     '../widgets/resize',
     '../widgets/select',
     '../store',
     '../locale/locale'
-], function (alternateformat_methods,m_get, m_util, formula, m_validate, tooltip,  m_constant, luckysheetsizeauto, m_select, Store, locale) {
+], function (alternateformat_methods,m_get, m_util, formula, luckysheetConfigsetting, tooltip,  m_constant, luckysheetsizeauto, m_select, Store, locale) {
     'use strict';
     const {getSheetIndex, getRangetxt} = m_get;
     const {replaceHtml} = m_util;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {luckysheetAlternateformatHtml, modelHTML} = m_constant;
     const {selectHightlightShow} = m_select;
     //交替颜色

@@ -5,5 +5,5 @@
  * @link www.skylarkjs.org
  * @license MIT
  */
-define(["skylark-langx-ns","skylark-jquery","./utils/math","./core","./utils/polyfill"],function(e,t,n,i){"use strict";const{luckysheet:s}=n;return window.addEventListener&&navigator.userAgent.indexOf("Firefox")>0&&i(),window.$=t,window.luckysheet=s,e.attach("intg.luckysheet",s),s});
+define(["skylark-langx-ns","skylark-jquery","./core","skylark-jqueryui","./vendors/jquery.mousewheel"],function(e,s,n){"use strict";const{luckysheet:r}=n;return window.$=s,window.luckysheet=r,e.attach("intg.luckysheet",r),r});
 //# sourceMappingURL=sourcemaps/main.js.map

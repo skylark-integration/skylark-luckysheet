@@ -1,22 +1,21 @@
 define([
-    './menuButton',
     './updateCell',
-    './constant',
+    '../widgets/constant',
     './sheetMove',
-    './insertFormula',
-    '../global/location',
-    '../global/validate',
-    '../global/formula',
-    '../global/tooltip',
+    '../widgets/insertFormula',
+    '../methods/location',
+    '../methods/luckysheetConfigsetting',
+    './formula',
+    '../widgets/tooltip',
     '../locale/locale',
     '../store'
-], function (menuButton, m_updateCell, m_constant, m_sheetMove, insertFormula, m_location, m_validate, formula, tooltip, locale, Store) {
+], function (m_updateCell, m_constant, m_sheetMove, insertFormula, m_location, luckysheetConfigsetting, formula, tooltip, locale, Store) {
     'use strict';
     const {luckysheetupdateCell} = m_updateCell;
     const {keycode} = m_constant;
     const {luckysheetMoveHighlightCell} = m_sheetMove;
     const {rowLocation, colLocation, mouseposition} = m_location;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     function formulaBarInitial() {
         //公式栏处理
         const _locale = locale();
@@ -28,10 +27,7 @@ define([
             }
             if (Store.luckysheet_select_save.length > 0) {
                 let last = Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1];
-                let row_index = last['row_focus'], col_index = last['column_focus'];    // let $input = $("#luckysheet-rich-text-editor"),value = $input.text();
-                                                                                        // if(value) {
-                                                                                        //     formula.updatecell(row_index, col_index);
-                                                                                        // }
+                let row_index = last['row_focus'], col_index = last['column_focus'];
                 // let $input = $("#luckysheet-rich-text-editor"),value = $input.text();
                 // if(value) {
                 //     formula.updatecell(row_index, col_index);

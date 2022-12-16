@@ -1,0 +1,9 @@
+/**
+ * skylark-lucksheet - A version of lucksheet.js that ported to running on skylarkjs.
+ * @author Hudaokeji Co.,Ltd
+ * @version v0.9.0
+ * @link www.skylarkjs.org
+ * @license MIT
+ */
+define(["../utils/browser","../methods/formula_methods","../methods/getdata","../methods/get","../store"],function(e,l,t,n,o){"use strict";const{datagridgrowth:r}=t,{getSheetIndex:a}=n,c={controlHandler:function(e,l){let t=this.deepCopyFlowData(o.flowdata),n=l||o.luckysheet_select_save[o.luckysheet_select_save.length-1],a=null==n.row?0:n.row[0],c=null==n.column?0:n.column[0],s=e.length,h=e[0].length,u=a+s-t.length,d=c+h-t[0].length;(u>0||d>0)&&(t=r([].concat(t),u,d,!0));for(let l=0;l<s;l++){let n=[].concat(t[l+a]);for(let t=0;t<h;t++){let o="";null!=e[l]&&null!=e[l][t]&&(o=e[l][t]),n[t+c]=o}t[l+a]=n}u>0||d>0?o.refreshGridAll(t[0].length,t.length,t,null,o.luckysheet_select_save,"datachangeAll"):o.refreshRange(t,o.luckysheet_select_save)},clearRangeByindex:function(e,t,n,r,c){let s=a(c),h=$.extend(!0,[],o.luckysheetfile[s].data);for(let o=e;o<=t;o++){let e=[].concat(h[o]);for(let t=n;t<=r;t++)l.delFunctionGroup(o,t),l.execFunctionGroup(o,t,""),e[t]=null;h[o]=e}if(c==o.currentSheetIndex){t-e+1>5e3?o.refreshRange(h,[{row:[e,t],column:[n,r]}]):jfrefreshrange(h,{row:[e,t],column:[n,r]})}else o.luckysheetfile[s].data=h},controlHandlerD:function(e){let l=this.deepCopyFlowData(o.flowdata),t=o.luckysheet_select_save[o.luckysheet_select_save.length-1],n=t.row[0],a=t.row[1],c=t.column[0],s=t.column[1],h=e.length,u=e[0].length,d=n+h-l.length,f=c+u-l[0].length;(d>0||f>0)&&(l=r([].concat(l),d,f,!0));for(let e=n;e<=a;e++)for(let t=c;t<=s;t++)l[e][t]=null;for(let t=0;t<h;t++)for(let o=0;o<u;o++)l[n+t][c+o]=e[t][o];let g=[{row:[n,a],column:[c,s]},{row:[n,n+h-1],column:[c,c+u-1]}];o.refreshRange(l,g)}};return c.deepCopyFlowData=o.deepCopyFlowData.bind(o),c.webWorkerFlowDataCache=o.webWorkerFlowDataCache.bind(o),c});
+//# sourceMappingURL=../sourcemaps/controllers/editor.js.map

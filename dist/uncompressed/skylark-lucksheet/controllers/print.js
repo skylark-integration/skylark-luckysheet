@@ -1,11 +1,9 @@
 define([
-    './luckysheetConfigsetting',
+    '../methods/luckysheetConfigsetting',
     './zoom',
-    './sheetmanage',
-    './server',
-    '../global/location',
+    '../methods/location',
     '../store'
-], function (luckysheetConfigsetting, m_zoom, sheetmanage, server, m_location, Store) {
+], function (luckysheetConfigsetting, m_zoom,  m_location, Store) {
     'use strict';
     const {zoomChange} = m_zoom;
     const {rowLocationByIndex, colLocationByIndex, mouseposition, rowLocation, colLocation} = m_location;
@@ -31,7 +29,7 @@ define([
         return mm1.width;
     }
     function viewChange(curType, preType) {
-        let currentSheet = sheetmanage.getSheetByIndex();
+        let currentSheet = Store.getSheetByIndex();
         if (currentSheet.config == null) {
             currentSheet.config = {};
         }
@@ -62,10 +60,10 @@ define([
                 'sheetIndex': Store.currentSheetIndex
             });
         }    // Store.zoomRatio = curZoom;
-             // server.saveParam("all", Store.currentSheetIndex, curZoom, { "k": "zoomRatio" });
+             // Store.saveParam("all", Store.currentSheetIndex, curZoom, { "k": "zoomRatio" });
         // Store.zoomRatio = curZoom;
-        // server.saveParam("all", Store.currentSheetIndex, curZoom, { "k": "zoomRatio" });
-        server.saveParam('cg', Store.currentSheetIndex, curType, { 'k': 'curentsheetView' });
+        // Store.saveParam("all", Store.currentSheetIndex, curZoom, { "k": "zoomRatio" });
+        Store.saveParam('cg', Store.currentSheetIndex, curType, { 'k': 'curentsheetView' });
         Store.currentSheetView = curType;
         zoomChange(curZoom);
     }

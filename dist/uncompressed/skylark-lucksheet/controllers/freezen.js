@@ -1,55 +1,35 @@
 define([
+    '../methods/freezen_methods',
     '../methods/get',
-    './sheetSearch',
-    './select',
+    '../methods/sheetSearch',
+    '../widgets/select',
     './filter',
-    './server',
-    './menuButton',
+    '../methods/cells',
     './postil',
     './dropCell',
-    '../global/location',
+    '../methods/location',
     '../store',
     '../locale/locale'
-], function (m_get, m_sheetSearch, m_select, m_filter, server, menuButton, luckysheetPostil, luckysheetDropCell, m_location, Store, locale) {
+], function (m_freezen_methods,m_get, m_sheetSearch, m_select, m_filter, cells, luckysheetPostil, luckysheetDropCell, m_location, Store, locale) {
     'use strict';
     const {getSheetIndex} = m_get;
     const {luckysheet_searcharray} = m_sheetSearch;
     const {selectHightlightShow} = m_select;
     const {createFilterOptions} = m_filter;
     const {rowLocationByIndex, colLocationByIndex} = m_location;
-    const luckysheetFreezen = {
+    const luckysheetFreezen = Object.assign(m_freezen_methods,{
         freezenHorizontalHTML: '<div id="luckysheet-freezebar-horizontal" class="luckysheet-freezebar" tabindex="0"><div class="luckysheet-freezebar-handle luckysheet-freezebar-horizontal-handle" ><div class="luckysheet-freezebar-handle-bar luckysheet-freezebar-horizontal-handle-title" ></div><div class="luckysheet-freezebar-handle-bar luckysheet-freezebar-horizontal-handle-bar" ></div></div><div class="luckysheet-freezebar-drop luckysheet-freezebar-horizontal-drop" ><div class="luckysheet-freezebar-drop-bar luckysheet-freezebar-horizontal-drop-title" ></div><div class="luckysheet-freezebar-drop-bar luckysheet-freezebar-horizontal-drop-bar" >&nbsp;</div></div></div>',
         freezenVerticalHTML: '<div id="luckysheet-freezebar-vertical" class="luckysheet-freezebar" tabindex="0"><div class="luckysheet-freezebar-handle luckysheet-freezebar-vertical-handle" ><div class="luckysheet-freezebar-handle-bar luckysheet-freezebar-vertical-handle-title" ></div><div class="luckysheet-freezebar-handle-bar luckysheet-freezebar-vertical-handle-bar" ></div></div><div class="luckysheet-freezebar-drop luckysheet-freezebar-vertical-drop" ><div class="luckysheet-freezebar-drop-bar luckysheet-freezebar-vertical-drop-title" ></div><div class="luckysheet-freezebar-drop-bar luckysheet-freezebar-vertical-drop-bar" >&nbsp;</div></div></div>',
-        initialHorizontal: true,
-        initialVertical: true,
-        horizontalmovestate: false,
-        horizontalmoveposition: null,
-        verticalmovestate: false,
-        verticalmoveposition: null,
+
         windowHeight: null,
         windowWidth: null,
-        freezenhorizontaldata: null,
-        freezenverticaldata: null,
-        cutVolumn: function (arr, cutindex) {
-            if (cutindex <= 0) {
-                return arr;
-            }
-            let pre = arr.slice(0, cutindex);
-            let premax = pre[pre.length - 1];
-            let ret = arr.slice(cutindex);    // for (let i = 0; i < ret.length; i++) {
-                                              //     ret[i] -= premax;
-                                              // }
-            // for (let i = 0; i < ret.length; i++) {
-            //     ret[i] -= premax;
-            // }
-            return ret;
-        },
+
         cancelFreezenVertical: function (sheetIndex) {
             let _this = this;
             const _locale = locale();
             const locale_freezen = _locale.freezen;
             $('#luckysheet-freezen-btn-vertical').html('<i class="fa fa-indent"></i> ' + locale_freezen.freezenColumn);
-            _this.freezenverticaldata = null;
+            Store.freezenverticaldata = null;
             let isvertical = $('#luckysheet-freezebar-vertical').is(':visible');
             $('#luckysheet-freezebar-vertical').hide();
             if (sheetIndex == null) {
@@ -60,7 +40,7 @@ define([
                 currentSheet.freezen.vertical = null;
             }
             if (currentSheet.frozen != null && isvertical) {
-                server.saveParam('all', sheetIndex, currentSheet.frozen, { 'k': 'frozen' });
+                Store.saveParam('all', sheetIndex, currentSheet.frozen, { 'k': 'frozen' });
             }
         },
         createFreezenVertical: function (freezenverticaldata, left) {
@@ -109,8 +89,7 @@ define([
                 ];
                 _this.saveFreezen(null, null, freezenverticaldata, left);
             }
-            _this.freezenverticaldata = freezenverticaldata;    // $("#luckysheet-freezen-btn-horizontal").html('<i class="luckysheet-icon-img-container iconfont luckysheet-iconfont-dongjie1"></i> '+locale().freezen.freezenCancel);
-                                                                // 解决freeze 不垂直居中的问题
+            Store.freezenverticaldata = freezenverticaldata; 
             // $("#luckysheet-freezen-btn-horizontal").html('<i class="luckysheet-icon-img-container iconfont luckysheet-iconfont-dongjie1"></i> '+locale().freezen.freezenCancel);
             // 解决freeze 不垂直居中的问题
             const freezeHTML = `
@@ -133,70 +112,7 @@ define([
             $('#luckysheet-freezen-btn-horizontal').html(freezeHTML);
             $('#luckysheet-freezebar-vertical').show().find('.luckysheet-freezebar-vertical-handle').css({ 'left': left }).end().find('.luckysheet-freezebar-vertical-drop').css({ 'left': left });
         },
-        saveFreezen: function (freezenhorizontaldata, top, freezenverticaldata, left) {
-            let currentSheet = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-            if (currentSheet.freezen == null) {
-                currentSheet.freezen = {};
-            }
-            if (freezenhorizontaldata != null) {
-                if (currentSheet.freezen.horizontal == null) {
-                    currentSheet.freezen.horizontal = {};
-                }
-                currentSheet.freezen.horizontal.freezenhorizontaldata = freezenhorizontaldata;
-                currentSheet.freezen.horizontal.top = top;
-            }
-            if (freezenverticaldata != null) {
-                if (currentSheet.freezen.vertical == null) {
-                    currentSheet.freezen.vertical = {};
-                }
-                currentSheet.freezen.vertical.freezenverticaldata = freezenverticaldata;
-                currentSheet.freezen.vertical.left = left;
-            }    // if(currentSheet.freezen != null){
-                 //     server.saveParam("all", Store.currentSheetIndex, currentSheet.freezen, { "k": "freezen" });
-                 // }
-                 // use new property frozen
-            // if(currentSheet.freezen != null){
-            //     server.saveParam("all", Store.currentSheetIndex, currentSheet.freezen, { "k": "freezen" });
-            // }
-            // use new property frozen
-            if (currentSheet.frozen != null) {
-                server.saveParam('all', Store.currentSheetIndex, currentSheet.frozen, { 'k': 'frozen' });
-            }
-        },
-        initialFreezen: function (sheetIndex) {
-            let _this = this;    // when init ,we get frozen, but here, we need freezen,so tranform it
-            // when init ,we get frozen, but here, we need freezen,so tranform it
-            _this.frozenTofreezen();
-            let currentSheet = Store.luckysheetfile[getSheetIndex(sheetIndex)];
-            if (currentSheet.freezen != null && currentSheet.freezen.horizontal != null && currentSheet.freezen.horizontal.freezenhorizontaldata != null) {
-                _this.createFreezenHorizontal(currentSheet.freezen.horizontal.freezenhorizontaldata, currentSheet.freezen.horizontal.top);
-            } else {
-                _this.cancelFreezenHorizontal(sheetIndex);
-            }
-            if (currentSheet.freezen != null && currentSheet.freezen.vertical != null && currentSheet.freezen.vertical.freezenverticaldata != null) {
-                _this.createFreezenVertical(currentSheet.freezen.vertical.freezenverticaldata, currentSheet.freezen.vertical.left);
-            } else {
-                _this.cancelFreezenVertical(sheetIndex);
-            }
-            _this.createAssistCanvas();
-        },
-        changeFreezenIndex: function (originindex, type) {
-            let _this = this;
-            if (type == 'v' && _this.freezenverticaldata != null) {
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offset = luckysheet_searcharray(Store.visibledatacolumn, $('#luckysheet-cell-main').scrollLeft());
-                if (originindex - offset < freezen_colindex) {
-                    originindex = originindex - offset;
-                }
-            } else if (type == 'h' && _this.freezenhorizontaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offset = luckysheet_searcharray(Store.visibledatarow, $('#luckysheet-cell-main').scrollTop());
-                if (originindex - offset < freezen_rowindex) {
-                    originindex = originindex - offset;
-                }
-            }
-            return originindex;
-        },
+
         scrollFreezen: function () {
             let _this = this;
             let row;
@@ -213,10 +129,10 @@ define([
             } else if (column_focus == Store.luckysheet_select_save[0]['column'][1]) {
                 column = Store.luckysheet_select_save[0]['column'][0];
             }
-            if (_this.freezenverticaldata != null) {
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offset = luckysheet_searcharray(_this.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft());
-                let top = _this.freezenverticaldata[4];
+            if (Store.freezenverticaldata != null) {
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offset = luckysheet_searcharray(Store.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft());
+                let top = Store.freezenverticaldata[4];
                 freezen_colindex += offset;
                 if (column >= Store.visibledatacolumn.length) {
                     column = Store.visibledatacolumn.length - 1;
@@ -232,10 +148,10 @@ define([
                     }, 100);
                 }
             }
-            if (_this.freezenhorizontaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offset = luckysheet_searcharray(_this.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop());
-                let left = _this.freezenhorizontaldata[4];
+            if (Store.freezenhorizontaldata != null) {
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let offset = luckysheet_searcharray(Store.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop());
+                let left = Store.freezenhorizontaldata[4];
                 freezen_rowindex += offset;
                 if (row >= Store.visibledatarow.length) {
                     row = Store.visibledatarow.length - 1;
@@ -274,7 +190,7 @@ define([
             </div>
         `;
             $('#luckysheet-freezen-btn-horizontal').html(freezeHTML);
-            _this.freezenhorizontaldata = null;
+            Store.freezenhorizontaldata = null;
             let ishorizontal = $('#luckysheet-freezebar-horizontal').is(':visible');
             $('#luckysheet-freezebar-horizontal').hide();
             if (sheetIndex == null) {
@@ -285,7 +201,7 @@ define([
                 currentSheet.freezen.horizontal = null;
             }
             if (currentSheet.frozen != null && ishorizontal) {
-                server.saveParam('all', sheetIndex, currentSheet.frozen, { 'k': 'frozen' });
+                Store.saveParam('all', sheetIndex, currentSheet.frozen, { 'k': 'frozen' });
             }
         },
         createFreezenHorizontal: function (freezenhorizontaldata, top) {
@@ -334,8 +250,7 @@ define([
                 ];
                 _this.saveFreezen(freezenhorizontaldata, top, null, null);
             }
-            _this.freezenhorizontaldata = freezenhorizontaldata;    // $("#luckysheet-freezen-btn-horizontal").html('<i class="fa fa-list-alt"></i> '+locale().freezen.freezenCancel);
-                                                                    // $("#luckysheet-freezen-btn-horizontal").html('<i class="luckysheet-icon-img-container iconfont luckysheet-iconfont-dongjie1"></i> '+locale().freezen.freezenCancel);
+            Store.freezenhorizontaldata = freezenhorizontaldata; 
             // $("#luckysheet-freezen-btn-horizontal").html('<i class="fa fa-list-alt"></i> '+locale().freezen.freezenCancel);
             // $("#luckysheet-freezen-btn-horizontal").html('<i class="luckysheet-icon-img-container iconfont luckysheet-iconfont-dongjie1"></i> '+locale().freezen.freezenCancel);
             const freezeHTML = `
@@ -361,18 +276,18 @@ define([
         createAssistCanvas: function () {
             let _this = this;
             _this.removeAssistCanvas();
-            if (_this.freezenverticaldata != null || _this.freezenhorizontaldata != null) {
+            if (Store.freezenverticaldata != null || Store.freezenhorizontaldata != null) {
                 let freezen_horizon_px, freezen_horizon_ed, freezen_horizon_scrollTop;
                 let freezen_vertical_px, freezen_vertical_ed, freezen_vertical_scrollTop;
                 let drawWidth = Store.luckysheetTableContentHW[0], drawHeight = Store.luckysheetTableContentHW[1];    //双向freezen
                 //双向freezen
-                if (_this.freezenverticaldata != null && _this.freezenhorizontaldata != null) {
-                    freezen_horizon_px = _this.freezenhorizontaldata[0];
-                    freezen_horizon_ed = _this.freezenhorizontaldata[1];
-                    freezen_horizon_scrollTop = _this.freezenhorizontaldata[2];
-                    freezen_vertical_px = _this.freezenverticaldata[0];
-                    freezen_vertical_ed = _this.freezenverticaldata[1];
-                    freezen_vertical_scrollTop = _this.freezenverticaldata[2];    //3
+                if (Store.freezenverticaldata != null && Store.freezenhorizontaldata != null) {
+                    freezen_horizon_px = Store.freezenhorizontaldata[0];
+                    freezen_horizon_ed = Store.freezenhorizontaldata[1];
+                    freezen_horizon_scrollTop = Store.freezenhorizontaldata[2];
+                    freezen_vertical_px = Store.freezenverticaldata[0];
+                    freezen_vertical_ed = Store.freezenverticaldata[1];
+                    freezen_vertical_scrollTop = Store.freezenverticaldata[2];    //3
                     //3
                     _this.createCanvas('freezen_3', freezen_vertical_px - freezen_vertical_scrollTop, freezen_horizon_px - freezen_horizon_scrollTop + 1, Store.rowHeaderWidth - 1, Store.columnHeaderHeight - 1);    //4
                     //4
@@ -381,17 +296,17 @@ define([
                     _this.createCanvas('freezen_7', freezen_vertical_px - freezen_vertical_scrollTop, drawHeight - freezen_horizon_px + freezen_horizon_scrollTop - Store.columnHeaderHeight, Store.rowHeaderWidth - 1, freezen_horizon_px - freezen_horizon_scrollTop + Store.columnHeaderHeight - 1);
                 }    //水平freezen
                 else //水平freezen
-                if (_this.freezenhorizontaldata != null) {
-                    freezen_horizon_px = _this.freezenhorizontaldata[0];
-                    freezen_horizon_ed = _this.freezenhorizontaldata[1];
-                    freezen_horizon_scrollTop = _this.freezenhorizontaldata[2];
+                if (Store.freezenhorizontaldata != null) {
+                    freezen_horizon_px = Store.freezenhorizontaldata[0];
+                    freezen_horizon_ed = Store.freezenhorizontaldata[1];
+                    freezen_horizon_scrollTop = Store.freezenhorizontaldata[2];
                     _this.createCanvas('freezen_h', drawWidth, freezen_horizon_px - freezen_horizon_scrollTop + 1, Store.rowHeaderWidth - 1, Store.columnHeaderHeight - 1);
                 }    //垂直freezen
                 else //垂直freezen
-                if (_this.freezenverticaldata != null) {
-                    freezen_vertical_px = _this.freezenverticaldata[0];
-                    freezen_vertical_ed = _this.freezenverticaldata[1];
-                    freezen_vertical_scrollTop = _this.freezenverticaldata[2];
+                if (Store.freezenverticaldata != null) {
+                    freezen_vertical_px = Store.freezenverticaldata[0];
+                    freezen_vertical_ed = Store.freezenverticaldata[1];
+                    freezen_vertical_scrollTop = Store.freezenverticaldata[2];
                     _this.createCanvas('freezen_v', freezen_vertical_px - freezen_vertical_scrollTop, drawHeight, Store.rowHeaderWidth - 1, Store.columnHeaderHeight - 1);
                 }
                 _this.scrollAdapt();
@@ -456,13 +371,13 @@ define([
             $('#luckysheet-cols-h-selected').empty();
             let scrollTop = $('#luckysheet-cell-main').scrollTop();
             let scrollLeft = $('#luckysheet-cell-main').scrollLeft();
-            if (_this.freezenhorizontaldata != null && _this.freezenverticaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0];
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offTop = scrollTop - _this.freezenhorizontaldata[2];
-                let freezenLeft = _this.freezenverticaldata[0];
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offLeft = scrollLeft - _this.freezenverticaldata[2];
+            if (Store.freezenhorizontaldata != null && Store.freezenverticaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0];
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let offTop = scrollTop - Store.freezenhorizontaldata[2];
+                let freezenLeft = Store.freezenverticaldata[0];
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offLeft = scrollLeft - Store.freezenverticaldata[2];
                 for (let s = 0; s < Store.luckysheet_select_save.length; s++) {
                     let obj = $.extend(true, {}, Store.luckysheet_select_save[s]);
                     let r1 = obj.row[0], r2 = obj.row[1];
@@ -546,7 +461,7 @@ define([
                         let cf = obj.column_focus == null ? c1 : obj.column_focus;
                         let row_f = Store.visibledatarow[rf], row_pre_f = rf - 1 == -1 ? 0 : Store.visibledatarow[rf - 1];
                         let col_f = Store.visibledatacolumn[cf], col_pre_f = cf - 1 == -1 ? 0 : Store.visibledatacolumn[cf - 1];
-                        let margeset = menuButton.mergeborer(Store.flowdata, rf, cf);
+                        let margeset = cells.mergeborer(Store.flowdata, rf, cf);
                         if (!!margeset) {
                             row_f = margeset.row[1];
                             row_pre_f = margeset.row[0];
@@ -621,10 +536,10 @@ define([
                         }
                     }
                 }
-            } else if (_this.freezenhorizontaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0];
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offTop = scrollTop - _this.freezenhorizontaldata[2];
+            } else if (Store.freezenhorizontaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0];
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let offTop = scrollTop - Store.freezenhorizontaldata[2];
                 for (let s = 0; s < Store.luckysheet_select_save.length; s++) {
                     let obj = $.extend(true, {}, Store.luckysheet_select_save[s]);
                     let r1 = obj.row[0], r2 = obj.row[1];
@@ -667,7 +582,7 @@ define([
                         let rf = obj.row_focus == null ? r1 : obj.row_focus;
                         let cf = obj.column_focus == null ? obj.column[0] : obj.column_focus;
                         let row_f = Store.visibledatarow[rf], row_pre_f = rf - 1 == -1 ? 0 : Store.visibledatarow[rf - 1];
-                        let margeset = menuButton.mergeborer(Store.flowdata, rf, cf);
+                        let margeset = cells.mergeborer(Store.flowdata, rf, cf);
                         if (!!margeset) {
                             row_f = margeset.row[1];
                             row_pre_f = margeset.row[0];
@@ -705,10 +620,10 @@ define([
                         }
                     }
                 }
-            } else if (_this.freezenverticaldata != null) {
-                let freezenLeft = _this.freezenverticaldata[0];
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offLeft = scrollLeft - _this.freezenverticaldata[2];
+            } else if (Store.freezenverticaldata != null) {
+                let freezenLeft = Store.freezenverticaldata[0];
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offLeft = scrollLeft - Store.freezenverticaldata[2];
                 for (let s = 0; s < Store.luckysheet_select_save.length; s++) {
                     let obj = $.extend(true, {}, Store.luckysheet_select_save[s]);
                     let c1 = obj.column[0], c2 = obj.column[1];
@@ -751,7 +666,7 @@ define([
                         let rf = obj.row_focus == null ? obj.row[0] : obj.row_focus;
                         let cf = obj.column_focus == null ? c1 : obj.column_focus;
                         let col_f = Store.visibledatacolumn[cf], col_pre_f = cf - 1 == -1 ? 0 : Store.visibledatacolumn[cf - 1];
-                        let margeset = menuButton.mergeborer(Store.flowdata, rf, cf);
+                        let margeset = cells.mergeborer(Store.flowdata, rf, cf);
                         if (!!margeset) {
                             col_f = margeset.column[1];
                             col_pre_f = margeset.column[0];
@@ -797,9 +712,9 @@ define([
             let _this = this;
             let scrollTop = $('#luckysheet-cell-main').scrollTop();
             let scrollLeft = $('#luckysheet-cell-main').scrollLeft();
-            if (_this.freezenhorizontaldata != null && _this.freezenverticaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0] - _this.freezenhorizontaldata[2];
-                let freezenLeft = _this.freezenverticaldata[0] - _this.freezenverticaldata[2];
+            if (Store.freezenhorizontaldata != null && Store.freezenverticaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0] - Store.freezenhorizontaldata[2];
+                let freezenLeft = Store.freezenverticaldata[0] - Store.freezenverticaldata[2];
                 $('#luckysheet-cell-main .luckysheet-data-visualization-chart').each(function (i, e) {
                     let x = $(e).position();
                     let width = $(e).width();
@@ -849,8 +764,8 @@ define([
                         $(e).find('canvas').css('left', 0);
                     }
                 });
-            } else if (_this.freezenhorizontaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0] - _this.freezenhorizontaldata[2];
+            } else if (Store.freezenhorizontaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0] - Store.freezenhorizontaldata[2];
                 $('#luckysheet-cell-main .luckysheet-data-visualization-chart').each(function (i, e) {
                     let x = $(e).position();
                     let height = $(e).height();
@@ -877,8 +792,8 @@ define([
                         $(e).find('canvas').css('top', 0);
                     }
                 });
-            } else if (_this.freezenverticaldata != null) {
-                let freezenLeft = _this.freezenverticaldata[0] - _this.freezenverticaldata[2];
+            } else if (Store.freezenverticaldata != null) {
+                let freezenLeft = Store.freezenverticaldata[0] - Store.freezenverticaldata[2];
                 $('#luckysheet-cell-main .luckysheet-data-visualization-chart').each(function (i, e) {
                     let x = $(e).position();
                     let width = $(e).width();
@@ -932,11 +847,11 @@ define([
             let _this = this;
             let scrollTop = $('#luckysheet-cell-main').scrollTop();
             let scrollLeft = $('#luckysheet-cell-main').scrollLeft();
-            if (_this.freezenhorizontaldata != null && _this.freezenverticaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0];
-                let freezenLeft = _this.freezenverticaldata[0];
-                let offTop = scrollTop - _this.freezenhorizontaldata[2];
-                let offLeft = scrollLeft - _this.freezenverticaldata[2];
+            if (Store.freezenhorizontaldata != null && Store.freezenverticaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0];
+                let freezenLeft = Store.freezenverticaldata[0];
+                let offTop = scrollTop - Store.freezenhorizontaldata[2];
+                let offLeft = scrollLeft - Store.freezenverticaldata[2];
                 $('#luckysheet-postil-showBoxs .luckysheet-postil-show').each(function (i, e) {
                     let id = $(e).attr('id');
                     let r = id.split('luckysheet-postil-show_')[1].split('_')[0];
@@ -944,7 +859,7 @@ define([
                     let postil = Store.flowdata[r][c].ps;
                     let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                     let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                    let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                    let margeset = cells.mergeborer(Store.flowdata, r, c);
                     if (!!margeset) {
                         row = margeset.row[1];
                         row_pre = margeset.row[0];
@@ -963,7 +878,7 @@ define([
                     let size = luckysheetPostil.getArrowCanvasSize(postil_left, postil_top, toX, toY);
                     let show = true;
                     let show2 = true;
-                    if (r >= _this.freezenhorizontaldata[1]) {
+                    if (r >= Store.freezenhorizontaldata[1]) {
                         if (postil_top + postil_height < freezenTop) {
                             $(e).show().find('.luckysheet-postil-show-main').css('top', postil_top + offTop);
                             $(e).show().find('.arrowCanvas').css('top', size[1] + offTop);
@@ -995,7 +910,7 @@ define([
                             $(e).show().find('.luckysheet-postil-show-main').css('top', postil_top + offTop);
                             $(e).show().find('.arrowCanvas').css('top', size[1] + offTop);
                         }
-                    if (c >= _this.freezenverticaldata[1]) {
+                    if (c >= Store.freezenverticaldata[1]) {
                         if (postil_left + postil_width < freezenLeft) {
                             $(e).show().find('.luckysheet-postil-show-main').css('left', postil_left + offLeft);
                             $(e).show().find('.arrowCanvas').css('left', size[0] + offLeft);
@@ -1034,9 +949,9 @@ define([
                         $(e).show().find('.arrowCanvas').show();
                     }
                 });
-            } else if (_this.freezenhorizontaldata != null) {
-                let freezenTop = _this.freezenhorizontaldata[0];
-                let offTop = scrollTop - _this.freezenhorizontaldata[2];
+            } else if (Store.freezenhorizontaldata != null) {
+                let freezenTop = Store.freezenhorizontaldata[0];
+                let offTop = scrollTop - Store.freezenhorizontaldata[2];
                 $('#luckysheet-postil-showBoxs .luckysheet-postil-show').each(function (i, e) {
                     let id = $(e).attr('id');
                     let r = id.split('luckysheet-postil-show_')[1].split('_')[0];
@@ -1044,7 +959,7 @@ define([
                     let postil = Store.flowdata[r][c].ps;
                     let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                     let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                    let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                    let margeset = cells.mergeborer(Store.flowdata, r, c);
                     if (!!margeset) {
                         row = margeset.row[1];
                         row_pre = margeset.row[0];
@@ -1061,7 +976,7 @@ define([
                         postil_top = 2;
                     }
                     let size = luckysheetPostil.getArrowCanvasSize(postil_left, postil_top, toX, toY);
-                    if (r >= _this.freezenhorizontaldata[1]) {
+                    if (r >= Store.freezenhorizontaldata[1]) {
                         if (postil_top + postil_height < freezenTop) {
                             $(e).show().find('.luckysheet-postil-show-main').css('top', postil_top + offTop);
                             $(e).show().find('.arrowCanvas').css('top', size[1] + offTop);
@@ -1086,9 +1001,9 @@ define([
                         $(e).show().find('.arrowCanvas').css('top', size[1] + offTop);
                     }
                 });
-            } else if (_this.freezenverticaldata != null) {
-                let freezenLeft = _this.freezenverticaldata[0];
-                let offLeft = scrollLeft - _this.freezenverticaldata[2];
+            } else if (Store.freezenverticaldata != null) {
+                let freezenLeft = Store.freezenverticaldata[0];
+                let offLeft = scrollLeft - Store.freezenverticaldata[2];
                 $('#luckysheet-postil-showBoxs .luckysheet-postil-show').each(function (i, e) {
                     let id = $(e).attr('id');
                     let r = id.split('luckysheet-postil-show_')[1].split('_')[0];
@@ -1096,7 +1011,7 @@ define([
                     let postil = Store.flowdata[r][c].ps;
                     let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                     let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                    let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                    let margeset = cells.mergeborer(Store.flowdata, r, c);
                     if (!!margeset) {
                         row = margeset.row[1];
                         row_pre = margeset.row[0];
@@ -1113,7 +1028,7 @@ define([
                         postil_top = 2;
                     }
                     let size = luckysheetPostil.getArrowCanvasSize(postil_left, postil_top, toX, toY);
-                    if (c >= _this.freezenverticaldata[1]) {
+                    if (c >= Store.freezenverticaldata[1]) {
                         if (postil_left + postil_width < freezenLeft) {
                             $(e).show().find('.luckysheet-postil-show-main').css('left', postil_left + offLeft);
                             $(e).show().find('.arrowCanvas').css('left', size[0] + offLeft);
@@ -1160,11 +1075,11 @@ define([
                 row_index = copy_r;
                 col_index = copy_c;
             }
-            if (_this.freezenhorizontaldata != null && _this.freezenverticaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offsetRow = luckysheet_searcharray(_this.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop() - _this.freezenhorizontaldata[2]);
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offsetColumn = luckysheet_searcharray(_this.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - _this.freezenverticaldata[2]);
+            if (Store.freezenhorizontaldata != null && Store.freezenverticaldata != null) {
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let offsetRow = luckysheet_searcharray(Store.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop() - Store.freezenhorizontaldata[2]);
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offsetColumn = luckysheet_searcharray(Store.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - Store.freezenverticaldata[2]);
                 if (row_index >= freezen_rowindex && col_index >= freezen_colindex) {
                     if (row_index < freezen_rowindex + offsetRow - 1 || col_index < freezen_colindex + offsetColumn - 1) {
                         $('#luckysheet-dropCell-icon').hide();
@@ -1192,9 +1107,9 @@ define([
                         'top': row
                     });
                 }
-            } else if (_this.freezenhorizontaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let offsetRow = luckysheet_searcharray(_this.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop() - _this.freezenhorizontaldata[2]);
+            } else if (Store.freezenhorizontaldata != null) {
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let offsetRow = luckysheet_searcharray(Store.freezenhorizontaldata[3], $('#luckysheet-cell-main').scrollTop() - Store.freezenhorizontaldata[2]);
                 if (row_index >= freezen_rowindex) {
                     if (row_index < freezen_rowindex + offsetRow - 1) {
                         $('#luckysheet-dropCell-icon').hide();
@@ -1205,9 +1120,9 @@ define([
                     let row = rowLocationByIndex(row_index + offsetRow)[1];
                     $('#luckysheet-dropCell-icon').show().css('top', row);
                 }
-            } else if (_this.freezenverticaldata != null) {
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offsetColumn = luckysheet_searcharray(_this.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - _this.freezenverticaldata[2]);
+            } else if (Store.freezenverticaldata != null) {
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offsetColumn = luckysheet_searcharray(Store.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - Store.freezenverticaldata[2]);
                 if (col_index >= freezen_colindex) {
                     if (col_index < freezen_colindex + offsetColumn - 1) {
                         $('#luckysheet-dropCell-icon').hide();
@@ -1228,11 +1143,11 @@ define([
         },
         scrollAdaptOffilteroptions: function () {
             let _this = this;
-            if (_this.freezenhorizontaldata != null && _this.freezenverticaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let freezen_top = _this.freezenhorizontaldata[0] + $('#luckysheet-cell-main').scrollTop();
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offsetColumn = luckysheet_searcharray(_this.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - _this.freezenverticaldata[2]);
+            if (Store.freezenhorizontaldata != null && Store.freezenverticaldata != null) {
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let freezen_top = Store.freezenhorizontaldata[0] + $('#luckysheet-cell-main').scrollTop();
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offsetColumn = luckysheet_searcharray(Store.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - Store.freezenverticaldata[2]);
                 $('#luckysheet-filter-options-sheet' + Store.currentSheetIndex + ' .luckysheet-filter-options').each(function (i, e) {
                     let row_index = $(e).data('str');
                     let top = row_index - 1 == -1 ? 0 : Store.visibledatarow[row_index - 1];
@@ -1264,9 +1179,9 @@ define([
                         });
                     }
                 });
-            } else if (_this.freezenhorizontaldata != null) {
-                let freezen_rowindex = _this.freezenhorizontaldata[1];
-                let freezen_top = _this.freezenhorizontaldata[0] + $('#luckysheet-cell-main').scrollTop();
+            } else if (Store.freezenhorizontaldata != null) {
+                let freezen_rowindex = Store.freezenhorizontaldata[1];
+                let freezen_top = Store.freezenhorizontaldata[0] + $('#luckysheet-cell-main').scrollTop();
                 $('#luckysheet-filter-options-sheet' + Store.currentSheetIndex + ' .luckysheet-filter-options').each(function (i, e) {
                     let row_index = $(e).data('str');
                     let top = row_index - 1 == -1 ? 0 : Store.visibledatarow[row_index - 1];
@@ -1280,9 +1195,9 @@ define([
                         $(e).show().css('top', top + $('#luckysheet-cell-main').scrollTop());
                     }
                 });
-            } else if (_this.freezenverticaldata != null) {
-                let freezen_colindex = _this.freezenverticaldata[1];
-                let offsetColumn = luckysheet_searcharray(_this.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - _this.freezenverticaldata[2]);
+            } else if (Store.freezenverticaldata != null) {
+                let freezen_colindex = Store.freezenverticaldata[1];
+                let offsetColumn = luckysheet_searcharray(Store.freezenverticaldata[3], $('#luckysheet-cell-main').scrollLeft() - Store.freezenverticaldata[2]);
                 $('#luckysheet-filter-options-sheet' + Store.currentSheetIndex + ' .luckysheet-filter-options').each(function (i, e) {
                     let col_index = $(e).data('cindex');
                     if (col_index >= freezen_colindex) {
@@ -1300,233 +1215,11 @@ define([
                 $('#luckysheet-filter-options-sheet' + Store.currentSheetIndex).empty();
                 createFilterOptions(Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].filter_select);
             }
-        },
-        /**
-     * 
-     * @param {string} operate  "freezenRow"/ "freezenColumn"......
-     * @param {Number | String} order 工作表索引；默认值为当前工作表索引
-     * @param {Object} focus 冻结选区时的focus单元格行列值构成的对象；格式为{ row_focus:0, column_focus:0 }
-     */
-        saveFrozen: function (operate, order, focus = {}) {
-            if (order == null) {
-                order = getSheetIndex(Store.currentSheetIndex);
-            }    // New configuration attribute of sheet: frozen, which stores more semantic configuration for initialization and transmission to the backend. freezenhorizontaldata is still used as local data
-            // New configuration attribute of sheet: frozen, which stores more semantic configuration for initialization and transmission to the backend. freezenhorizontaldata is still used as local data
-            const select_save = Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1];
-            const row_focus = select_save['row_focus'] == null ? select_save['row'][0] : select_save['row_focus'];
-            const column_focus = select_save['column_focus'] == null ? select_save['column'][0] : select_save['column_focus'];
-            const range = {
-                row_focus: focus.row_focus || row_focus,
-                column_focus: focus.column_focus || column_focus
-            };
-            const frozen = {
-                'freezenRow': { type: 'row' },
-                'freezenColumn': { type: 'column' },
-                'freezenRC': { type: 'both' },
-                'freezenRowRange': {
-                    type: 'rangeRow',
-                    range: range
-                },
-                'freezenColumnRange': {
-                    type: 'rangeColumn',
-                    range: range
-                },
-                'freezenRCRange': {
-                    type: 'rangeBoth',
-                    range: range
-                },
-                'freezenCancel': { type: 'cancel' }
-            };    // store frozen
-            // store frozen
-            Store.luckysheetfile[order]['frozen'] = frozen[operate];
-        },
-        frozenTofreezen: function () {
-            // get frozen type
-            let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
-            const frozen = file['frozen'];
-            if (frozen == null) {
-                return;
-            }
-            let freezen = null;    // transform to freezen
-            // transform to freezen
-            if (frozen.type === 'row') {
-                let scrollTop = 0;
-                let row_st = luckysheet_searcharray(Store.visibledatarow, scrollTop);
-                if (row_st == -1) {
-                    row_st = 0;
-                }
-                let top = Store.visibledatarow[row_st] - 2 - scrollTop + Store.columnHeaderHeight;
-                let freezenhorizontaldata = [
-                    Store.visibledatarow[row_st],
-                    row_st + 1,
-                    scrollTop,
-                    luckysheetFreezen.cutVolumn(Store.visibledatarow, row_st + 1),
-                    top
-                ];
-                freezen = {
-                    horizontal: {
-                        freezenhorizontaldata: freezenhorizontaldata,
-                        top: top
-                    }
-                };
-            } else if (frozen.type === 'column') {
-                let scrollLeft = 0;
-                let col_st = luckysheet_searcharray(Store.visibledatacolumn, scrollLeft);
-                if (col_st == -1) {
-                    col_st = 0;
-                }
-                let left = Store.visibledatacolumn[col_st] - 2 - scrollLeft + Store.rowHeaderWidth;
-                let freezenverticaldata = [
-                    Store.visibledatacolumn[col_st],
-                    col_st + 1,
-                    scrollLeft,
-                    luckysheetFreezen.cutVolumn(Store.visibledatacolumn, col_st + 1),
-                    left
-                ];
-                freezen = {
-                    vertical: {
-                        freezenverticaldata: freezenverticaldata,
-                        left: left
-                    }
-                };
-            } else if (frozen.type === 'both') {
-                let scrollTop = 0;
-                let row_st = luckysheet_searcharray(Store.visibledatarow, scrollTop);
-                if (row_st == -1) {
-                    row_st = 0;
-                }
-                let top = Store.visibledatarow[row_st] - 2 - scrollTop + Store.columnHeaderHeight;
-                let freezenhorizontaldata = [
-                    Store.visibledatarow[row_st],
-                    row_st + 1,
-                    scrollTop,
-                    luckysheetFreezen.cutVolumn(Store.visibledatarow, row_st + 1),
-                    top
-                ];
-                let scrollLeft = 0;
-                let col_st = luckysheet_searcharray(Store.visibledatacolumn, scrollLeft);
-                if (col_st == -1) {
-                    col_st = 0;
-                }
-                let left = Store.visibledatacolumn[col_st] - 2 - scrollLeft + Store.rowHeaderWidth;
-                let freezenverticaldata = [
-                    Store.visibledatacolumn[col_st],
-                    col_st + 1,
-                    scrollLeft,
-                    luckysheetFreezen.cutVolumn(Store.visibledatacolumn, col_st + 1),
-                    left
-                ];
-                freezen = {
-                    horizontal: {
-                        freezenhorizontaldata: freezenhorizontaldata,
-                        top: top
-                    },
-                    vertical: {
-                        freezenverticaldata: freezenverticaldata,
-                        left: left
-                    }
-                };
-            } else if (frozen.type === 'rangeRow') {
-                let scrollTop = 0;
-                let row_st = luckysheet_searcharray(Store.visibledatarow, scrollTop);
-                let row_focus = frozen.range['row_focus'];
-                if (row_focus > row_st) {
-                    row_st = row_focus;
-                }
-                if (row_st == -1) {
-                    row_st = 0;
-                }
-                let top = Store.visibledatarow[row_st] - 2 - scrollTop + Store.columnHeaderHeight;
-                let freezenhorizontaldata = [
-                    Store.visibledatarow[row_st],
-                    row_st + 1,
-                    scrollTop,
-                    luckysheetFreezen.cutVolumn(Store.visibledatarow, row_st + 1),
-                    top
-                ];
-                freezen = {
-                    horizontal: {
-                        freezenhorizontaldata: freezenhorizontaldata,
-                        top: top
-                    }
-                };
-            } else if (frozen.type === 'rangeColumn') {
-                let scrollLeft = 0;
-                let col_st = luckysheet_searcharray(Store.visibledatacolumn, scrollLeft);
-                let column_focus = frozen.range['column_focus'];
-                if (column_focus > col_st) {
-                    col_st = column_focus;
-                }
-                if (col_st == -1) {
-                    col_st = 0;
-                }
-                let left = Store.visibledatacolumn[col_st] - 2 - scrollLeft + Store.rowHeaderWidth;
-                let freezenverticaldata = [
-                    Store.visibledatacolumn[col_st],
-                    col_st + 1,
-                    scrollLeft,
-                    luckysheetFreezen.cutVolumn(Store.visibledatacolumn, col_st + 1),
-                    left
-                ];
-                freezen = {
-                    vertical: {
-                        freezenverticaldata: freezenverticaldata,
-                        left: left
-                    }
-                };
-            } else if (frozen.type === 'rangeBoth') {
-                let scrollTop = 0;
-                let row_st = luckysheet_searcharray(Store.visibledatarow, scrollTop);
-                let row_focus = frozen.range['row_focus'];
-                if (row_focus > row_st) {
-                    row_st = row_focus;
-                }
-                if (row_st == -1) {
-                    row_st = 0;
-                }
-                let top = Store.visibledatarow[row_st] - 2 - scrollTop + Store.columnHeaderHeight;
-                let freezenhorizontaldata = [
-                    Store.visibledatarow[row_st],
-                    row_st + 1,
-                    scrollTop,
-                    luckysheetFreezen.cutVolumn(Store.visibledatarow, row_st + 1),
-                    top
-                ];
-                let scrollLeft = 0;
-                let col_st = luckysheet_searcharray(Store.visibledatacolumn, scrollLeft);
-                let column_focus = frozen.range['column_focus'];
-                if (column_focus > col_st) {
-                    col_st = column_focus;
-                }
-                if (col_st == -1) {
-                    col_st = 0;
-                }
-                let left = Store.visibledatacolumn[col_st] - 2 - scrollLeft + Store.rowHeaderWidth;
-                let freezenverticaldata = [
-                    Store.visibledatacolumn[col_st],
-                    col_st + 1,
-                    scrollLeft,
-                    luckysheetFreezen.cutVolumn(Store.visibledatacolumn, col_st + 1),
-                    left
-                ];
-                freezen = {
-                    horizontal: {
-                        freezenhorizontaldata: freezenhorizontaldata,
-                        top: top
-                    },
-                    vertical: {
-                        freezenverticaldata: freezenverticaldata,
-                        left: left
-                    }
-                };
-            } else if (frozen.type === 'cancel') {
-                freezen = {
-                    horizontal: null,
-                    vertical: null
-                };
-            }
-            file['freezen'] = freezen;
         }
+    });
+
+    Store.onScrollFreezen = function() {
+        luckysheetFreezens.scrollFreezen();
     };
     return luckysheetFreezen;
 });

@@ -1,10 +1,10 @@
 define([
-    '../global/func_methods',
-    '../global/formula',
-    '../global/tooltip',
-    '../global/validate',
-    '../global/getdata',
-    '../global/format',
+    '../methods/func_methods',
+    '../methods/formula_methods',
+    '../widgets/tooltip',
+    '../methods/validate',
+    '../methods/getdata',
+    '../methods/format',
     '../function/matrix_methods',
     '../methods/get',
     '../utils/util',
@@ -792,7 +792,7 @@ define([
                             if (sp == '%' && parseFloat(tp[n]) == 0) {
                                 value = error.d;
                             } else {
-                                value = luckysheet_calcADPMM(fp[n], sp, tp[n]);    //eval(parseFloat(fp[n]) + sp + "(" + parseFloat(tp[n]) + ")" );    
+                                value = luckysheet_calcADPMM(fp[n], sp, tp[n]);    
                             }
                         } else
                             //eval(parseFloat(fp[n]) + sp + "(" + parseFloat(tp[n]) + ")" );    
@@ -816,7 +816,7 @@ define([
                                 if (sp == '%' && parseFloat(tp) == 0) {
                                     value = error.d;
                                 } else {
-                                    value = luckysheet_calcADPMM(fp[m][n], sp, tp);    //eval(parseFloat(fp[m][n]) + sp + parseFloat(tp));    
+                                    value = luckysheet_calcADPMM(fp[m][n], sp, tp);   
                                 }
                             } else
                                 //eval(parseFloat(fp[m][n]) + sp + parseFloat(tp));    
@@ -897,7 +897,7 @@ define([
                     if (sp == '%' && parseFloat(tp) == 0) {
                         result = error.d;
                     } else {
-                        result = luckysheet_calcADPMM(fp, sp, tp);    //eval(parseFloat(fp) + sp + "(" + parseFloat(tp) + ")");    
+                        result = luckysheet_calcADPMM(fp, sp, tp);   
                     }
                 } else
                     //eval(parseFloat(fp) + sp + "(" + parseFloat(tp) + ")");    
@@ -1291,10 +1291,7 @@ define([
             sheetIndex = luckysheetfile[index].index;    // sheetdata = Store.flowdata;
             // sheetdata = Store.flowdata;
             sheetdata = luckysheetfile[index].data;
-            rangetxt = val[0];    // 取消execFunctionGroupData，改用execFunctionGlobalData
-                                  // if (formula.execFunctionGroupData != null) {
-                                  //     sheetdata = formula.execFunctionGroupData;
-                                  // }
+            rangetxt = val[0];
         }
         // 取消execFunctionGroupData，改用execFunctionGlobalData
         // if (formula.execFunctionGroupData != null) {
@@ -1472,7 +1469,7 @@ define([
         if (!(getObjType(arguments[0]) == 'object' && arguments[0].startCell != null)) {
             return formula.error.v;
         }
-        var reference = arguments[0].startCell;    //要偏移的行数
+        var reference = arguments[0].startCell; 
         //要偏移的行数
         var rows = func_methods.getFirstValue(arguments[1]);
         if (valueIsError(rows)) {
@@ -1490,7 +1487,7 @@ define([
         if (!isRealNum(cols)) {
             return formula.error.v;
         }
-        cols = parseInt(cols);    //要从偏移目标开始返回的范围的高度
+        cols = parseInt(cols);
         //要从偏移目标开始返回的范围的高度
         var height = arguments[0].rowl;
         if (arguments.length >= 4) {
@@ -1502,7 +1499,7 @@ define([
                 return formula.error.v;
             }
             height = parseInt(height);
-        }    //要从偏移目标开始返回的范围的宽度
+        } 
         //要从偏移目标开始返回的范围的宽度
         var width = arguments[0].coll;
         if (arguments.length == 5) {
@@ -1517,7 +1514,7 @@ define([
         }
         if (height < 1 || width < 1) {
             return formula.error.r;
-        }    //计算
+        } 
         //计算
         var cellrange = formula.getcellrange(reference);
         var cellRow0 = cellrange['row'][0];

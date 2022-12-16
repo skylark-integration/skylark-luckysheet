@@ -1,11 +1,15 @@
 define([
-    '../global/getdata',
-    '../global/cursorPos',
+    "../utils/util",
+    '../methods/cells',
+    '../widgets/cursorPos',
     '../locale/locale',
     '../store'
-], function (m_getdata, m_cursorPos, locale, Store) {
+], function (m_util,m_cells,m_cursorPos, locale, Store) {
     'use strict';
-    const {getFontStyleByCell, textTrim} = m_getdata;
+    const {textTrim} = m_util;
+    const {getFontStyleByCell,isInlineStringCell,isInlineStringCT} = m_cells;
+
+
     const {selectTextContent, selectTextContentCross, selectTextContentCollapse} = m_cursorPos;
     const inlineStyleAffectAttribute = {
         'bl': 1,
@@ -25,14 +29,9 @@ define([
         'font-size': 1,
         'color': 1
     };
-    function isInlineStringCell(cell) {
-        let isIs = cell && cell.ct != null && cell.ct.t == 'inlineStr' && cell.ct.s != null && cell.ct.s.length > 0;
-        return isIs;
-    }
-    function isInlineStringCT(ct) {
-        let isIs = ct != null && ct.t == 'inlineStr' && ct.s != null && ct.s.length > 0;
-        return isIs;
-    }
+
+    const {convertCssToStyleList,convertSpanToShareString} = m_util;
+
     function updateInlineStringFormat(cell, attr, value, $input) {
         // let s = Store.inlineStringEditCache;
         var w = window.getSelection();
@@ -41,16 +40,7 @@ define([
             range = Store.inlineStringEditRange;
         } else {
             range = w.getRangeAt(0);
-        }    // if(isInlineStringCell(cell)){
-             //     if(Store.inlineStringEditCache==null){
-             //         Store.inlineStringEditCache = JSON.parse(JSON.stringify(cell.ct.s));
-             //     }
-             // }
-             // else{
-             //     Store.inlineStringEditCache = [{
-             //         v:cell.v
-             //     }];
-             // }
+        }
         // if(isInlineStringCell(cell)){
         //     if(Store.inlineStringEditCache==null){
         //         Store.inlineStringEditCache = JSON.parse(JSON.stringify(cell.ct.s));
@@ -226,9 +216,7 @@ define([
         } else {
             $textEditor = $(cac).closest('#luckysheet-rich-text-editor');
         }
-        let $functionbox = $(cac).closest('#luckysheet-functionbox-cell');    // if(range.collapsed===true){
-                                                                              //     return;
-                                                                              // }
+        let $functionbox = $(cac).closest('#luckysheet-functionbox-cell');
         // if(range.collapsed===true){
         //     return;
         // }
@@ -244,7 +232,7 @@ define([
                 }
                 startSpan = startSpan.get(startSpan.length - 1);
                 startOffset = startSpan.innerHTML.length;
-            }    // let startSpanIndex = $textEditor.find("span").index(startSpan);
+            } 
             // let startSpanIndex = $textEditor.find("span").index(startSpan);
             if (range.collapsed === false) {
                 range.deleteContents();
@@ -303,97 +291,7 @@ define([
             item[key] = value;
         }
     }
-    function convertSpanToShareString($dom) {
-        let styles = [], preStyleList, preStyleListString = null;
-        for (let i = 0; i < $dom.length; i++) {
-            let span = $dom.get(i);
-            let styleList = convertCssToStyleList(span.style.cssText);
-            let curStyleListString = JSON.stringify(styleList);    // let v = span.innerHTML;
-            // let v = span.innerHTML;
-            let v = span.innerText;
-            v = v.replace(/\n/g, '\r\n');
-            if (curStyleListString == preStyleListString) {
-                preStyleList.v += v;
-            } else {
-                styleList.v = v;
-                styles.push(styleList);
-                preStyleListString = curStyleListString;
-                preStyleList = styleList;
-            }
-        }
-        return styles;
-    }
-    function convertCssToStyleList(cssText) {
-        if (cssText == null || cssText.length == 0) {
-            return {};
-        }
-        let cssTextArray = cssText.split(';');
-        const _locale = locale();
-        const locale_fontarray = _locale.fontarray;
-        const locale_fontjson = _locale.fontjson;
-        let styleList = {
-            'ff': locale_fontarray[0],
-            //font family
-            'fc': '#000000',
-            //font color
-            'fs': 10,
-            //font size
-            'cl': 0,
-            //strike
-            'un': 0,
-            //underline
-            'bl': 0,
-            //blod
-            'it': 0
-        };
-        //italic
-        cssTextArray.forEach(s => {
-            s = s.toLowerCase();
-            let key = textTrim(s.substr(0, s.indexOf(':')));
-            let value = textTrim(s.substr(s.indexOf(':') + 1));
-            if (key == 'font-weight') {
-                if (value == 'bold') {
-                    styleList['bl'] = 1;
-                } else {
-                    styleList['bl'] = 0;
-                }
-            }
-            if (key == 'font-style') {
-                if (value == 'italic') {
-                    styleList['it'] = 1;
-                } else {
-                    styleList['it'] = 0;
-                }
-            }
-            if (key == 'font-family') {
-                let ff = locale_fontjson[value];
-                if (ff == null) {
-                    styleList['ff'] = value;
-                } else {
-                    styleList['ff'] = ff;
-                }
-            }
-            if (key == 'font-size') {
-                styleList['fs'] = parseInt(value);
-            }
-            if (key == 'color') {
-                styleList['fc'] = value;
-            }
-            if (key == 'text-decoration') {
-                styleList['cl'] = 1;
-            }
-            if (key == 'border-bottom') {
-                styleList['un'] = 1;
-            }
-            if (key == 'lucky-strike') {
-                styleList['cl'] = value;
-            }
-            if (key == 'lucky-underline') {
-                styleList['un'] = value;
-            }
-        });
-        return styleList;
-    }
+
     const luckyToCssName = {
         'bl': 'font-weight',
         'it': 'font-style',

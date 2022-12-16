@@ -1,42 +1,38 @@
 define([
     './pivotTable',
     './postil',
-    './imageCtrl',
-    './menuButton',
-    './server',
-    './select',
+    '../widgets/imageCtrl',
+    '../methods/cells',
+    '../widgets/select',
+    "../methods/luckysheetConfigsetting",
     '../utils/util',
     '../methods/get',
-    '../global/location',
-    '../global/validate',
-    '../global/count',
-    '../global/formula',
-    '../global/extend',
-    '../global/refresh',
-    '../global/getdata',
-    '../global/tooltip',
-    '../global/editor',
+    '../methods/location',
+    '../methods/validate',
+    '../methods/count',
+    './formula',
+    '../widgets/extend',
+    '../methods/getdata',
+    '../widgets/tooltip',
     '../locale/locale',
-    '../global/getRowlen',
-    '../controllers/sheetSearch',
-    './inlineString',
-    './protection',
-    '../store',
-    './luckysheetConfigsetting'
-], function (pivotTable, luckysheetPostil, imageCtrl, menuButton, server, m_select, m_util, m_get, m_location, m_validate, m_count, formula, m_extend, m_refresh, m_getdata, tooltip, editor, locale, m_getRowlen, m_sheetSearch, m_inlineString, m_protection, Store, luckysheetConfigsetting) {
+    '../methods/getRowlen',
+    '../methods/sheetSearch',
+    '../methods/protection_methods',
+    '../store'
+], function (pivotTable, luckysheetPostil, imageCtrl, cells, m_select, luckysheetConfigsetting,m_util, m_get, m_location, m_validate, m_count, formula, m_extend, m_getdata, tooltip, locale, m_getRowlen, m_sheetSearch, m_protection, Store) {
     'use strict';
     const {selectHightlightShow, luckysheet_count_show, selectHelpboxFill} = m_select;
     const {getObjType, showrightclickmenu, luckysheetContainerFocus, luckysheetfontformat, $$} = m_util;
     const {getSheetIndex, getRangetxt} = m_get;
     const {rowLocation, rowLocationByIndex, colLocation, colLocationByIndex, mouseposition} = m_location;
-    const {isRealNull, isRealNum, hasPartMC, isEditMode} = m_validate;
+    const {isRealNull, isRealNum, hasPartMC} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {countfunc} = m_count;
     const {luckysheetextendtable, luckysheetdeletetable, luckysheetDeleteCell} = m_extend;
-    const {jfrefreshgrid, jfrefreshgridall, jfrefreshgrid_rhcw} = m_refresh;
     const {getcellvalue} = m_getdata;
     const {getMeasureText, getCellTextInfo} = m_getRowlen;
     const {luckysheet_searcharray} = m_sheetSearch;
-    const {isInlineStringCell} = m_inlineString;
+    const {isInlineStringCell} = cells;
     const {checkProtectionLockedRangeList, checkProtectionAllSelected, checkProtectionAuthorityNormal} = m_protection;
     function rowColumnOperationInitial() {
         //表格行标题 mouse事件
@@ -81,7 +77,7 @@ define([
             if (parseInt($input.css('top')) > 0) {
                 if (formula.rangestart || formula.rangedrag_column_start || formula.rangedrag_row_start || formula.israngeseleciton() || $('#luckysheet-ifFormulaGenerator-multiRange-dialog').is(':visible')) {
                     //公式选区
-                    let changeparam = menuButton.mergeMoveMain([
+                    let changeparam = cells.mergeMoveMain([
                         0,
                         col_index
                     ], rowseleted, {
@@ -128,7 +124,7 @@ define([
                                 row_index
                             ];
                         }
-                        let changeparam = menuButton.mergeMoveMain([
+                        let changeparam = cells.mergeMoveMain([
                             0,
                             col_index
                         ], rowseleted, {
@@ -346,7 +342,7 @@ define([
                 }
                 selectHightlightShow();    //允许编辑后的后台更新时
                 //允许编辑后的后台更新时
-                server.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
+                Store.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
             }
             selectHelpboxFill();
             setTimeout(function () {
@@ -493,7 +489,7 @@ define([
             if (parseInt($input.css('top')) > 0) {
                 if (formula.rangestart || formula.rangedrag_column_start || formula.rangedrag_row_start || formula.israngeseleciton() || $('#luckysheet-ifFormulaGenerator-multiRange-dialog').is(':visible')) {
                     //公式选区
-                    let changeparam = menuButton.mergeMoveMain(columnseleted, [
+                    let changeparam = cells.mergeMoveMain(columnseleted, [
                         0,
                         row_index
                     ], {
@@ -541,7 +537,7 @@ define([
                                 col_index
                             ];
                         }
-                        let changeparam = menuButton.mergeMoveMain(columnseleted, [
+                        let changeparam = cells.mergeMoveMain(columnseleted, [
                             0,
                             row_index
                         ], {
@@ -748,7 +744,7 @@ define([
                 }
                 selectHightlightShow();    //允许编辑后的后台更新时
                 //允许编辑后的后台更新时
-                server.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
+                Store.saveParam('mv', Store.currentSheetIndex, Store.luckysheet_select_save);
             }
             selectHelpboxFill();
             setTimeout(function () {
@@ -1573,9 +1569,10 @@ define([
                 //config
                 Store.config = cfg;
                 Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-                server.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
                 //行高、列宽 刷新  
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             }    // 隐藏列
             else // 隐藏列
             if (Store.luckysheetRightHeadClickIs == 'column') {
@@ -1605,9 +1602,10 @@ define([
                 //config
                 Store.config = cfg;
                 Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-                server.saveParam('cg', Store.currentSheetIndex, cfg['colhidden'], { 'k': 'colhidden' });    //行高、列宽 刷新  
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['colhidden'], { 'k': 'colhidden' });    //行高、列宽 刷新  
                 //行高、列宽 刷新  
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             }
         });    //取消隐藏选中行列
         //取消隐藏选中行列
@@ -1659,9 +1657,10 @@ define([
                 //config
                 Store.config = cfg;
                 Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-                server.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
                 //行高、列宽 刷新  
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             } else if (Store.luckysheetRightHeadClickIs == 'column') {
                 if (!checkProtectionAuthorityNormal(Store.currentSheetIndex, 'formatColumns')) {
                     return;
@@ -1689,9 +1688,10 @@ define([
                 //config
                 Store.config = cfg;
                 Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-                server.saveParam('cg', Store.currentSheetIndex, cfg['colhidden'], { 'k': 'colhidden' });    //行高、列宽 刷新  
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['colhidden'], { 'k': 'colhidden' });    //行高、列宽 刷新  
                 //行高、列宽 刷新  
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             }
         });    //隐藏、显示行
                // $("#luckysheet-hidRows").click(function (event) {
@@ -1724,7 +1724,7 @@ define([
                //     //config
                //     Store.config = cfg;
                //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-               //     server.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
+               //     Store.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
                //     //行高、列宽 刷新  
                //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                // })
@@ -1758,7 +1758,7 @@ define([
                //     //config
                //     Store.config = cfg;
                //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-               //     server.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
+               //     Store.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
                //     //行高、列宽 刷新  
                //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                // })
@@ -1793,7 +1793,7 @@ define([
                //     //config
                //     Store.config = cfg;
                //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-               //     server.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
+               //     Store.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
                //     //行高、列宽 刷新  
                //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                // })
@@ -1827,7 +1827,7 @@ define([
                //     //config
                //     Store.config = cfg;
                //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-               //     server.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
+               //     Store.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
                //     //行高、列宽 刷新  
                //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
                // })
@@ -1863,7 +1863,7 @@ define([
         //     //config
         //     Store.config = cfg;
         //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-        //     server.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
+        //     Store.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
         //     //行高、列宽 刷新  
         //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
         // })
@@ -1897,7 +1897,7 @@ define([
         //     //config
         //     Store.config = cfg;
         //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-        //     server.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
+        //     Store.saveParam("cg", Store.currentSheetIndex, cfg["rowhidden"], { "k": "rowhidden" });
         //     //行高、列宽 刷新  
         //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
         // })
@@ -1932,7 +1932,7 @@ define([
         //     //config
         //     Store.config = cfg;
         //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-        //     server.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
+        //     Store.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
         //     //行高、列宽 刷新  
         //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
         // })
@@ -1966,7 +1966,7 @@ define([
         //     //config
         //     Store.config = cfg;
         //     Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-        //     server.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
+        //     Store.saveParam("cg", Store.currentSheetIndex, cfg["colhidden"], { "k": "colhidden" });
         //     //行高、列宽 刷新  
         //     jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
         // })
@@ -2012,7 +2012,7 @@ define([
                 return;
             }
             if (Store.luckysheet_select_save.length > 0) {
-                let d = editor.deepCopyFlowData(Store.flowdata);
+                let d = Store.deepCopyFlowData(Store.flowdata);
                 let has_PartMC = false;
                 for (let s = 0; s < Store.luckysheet_select_save.length; s++) {
                     let r1 = Store.luckysheet_select_save[s].row[0], r2 = Store.luckysheet_select_save[s].row[1];
@@ -2056,7 +2056,8 @@ define([
                         }
                     }
                 }
-                jfrefreshgrid(d, Store.luckysheet_select_save);
+                ///jfrefreshgrid(d, Store.luckysheet_select_save);
+                Store.refreshGrid(d, Store.luckysheet_select_save);
             }
         });    //行高列宽设置
                // $("#luckysheet-rows-cols-changesize").click(function(){
@@ -2141,15 +2142,17 @@ define([
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;    //images
             //images
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].images = images;
-            server.saveParam('all', Store.currentSheetIndex, images, { 'k': 'images' });
+            Store.saveParam('all', Store.currentSheetIndex, images, { 'k': 'images' });
             imageCtrl.images = images;
             imageCtrl.allImagesShow();
             if (Store.luckysheetRightHeadClickIs == 'row') {
-                server.saveParam('cg', Store.currentSheetIndex, cfg['rowlen'], { 'k': 'rowlen' });
-                jfrefreshgrid_rhcw(Store.flowdata.length, null);
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['rowlen'], { 'k': 'rowlen' });
+                ///jfrefreshgrid_rhcw(Store.flowdata.length, null);
+                Store.refreshGrid_rhcw(Store.flowdata.length, null);
             } else if (Store.luckysheetRightHeadClickIs == 'column') {
-                server.saveParam('cg', Store.currentSheetIndex, cfg['columnlen'], { 'k': 'columnlen' });
-                jfrefreshgrid_rhcw(null, Store.flowdata[0].length);
+                Store.saveParam('cg', Store.currentSheetIndex, cfg['columnlen'], { 'k': 'columnlen' });
+                ///jfrefreshgrid_rhcw(null, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(null, Store.flowdata[0].length);
             }
         });
     }
@@ -2162,7 +2165,7 @@ define([
         let scrollLeft = $('#luckysheet-cols-h-c').scrollLeft();
         let x = mouse[0] + scrollLeft;
         let colIndex = colLocation(x)[2];
-        let d = editor.deepCopyFlowData(Store.flowdata);
+        let d = Store.deepCopyFlowData(Store.flowdata);
         let canvas = $('#luckysheetTableContent').get(0).getContext('2d');
         let cfg = $.extend(true, {}, Store.config);
         if (cfg['columnlen'] == null) {
@@ -2268,8 +2271,10 @@ define([
                 }
             }
         }
-        jfrefreshgridall(Store.flowdata[0].length, Store.flowdata.length, Store.flowdata, cfg, Store.luckysheet_select_save, 'resizeC', 'columnlen');
-    }    /**
+        ///jfrefreshgridall(Store.flowdata[0].length, Store.flowdata.length, Store.flowdata, cfg, Store.luckysheet_select_save, 'resizeC', 'columnlen');
+        Store.refreshGridAll(Store.flowdata[0].length, Store.flowdata.length, Store.flowdata, cfg, Store.luckysheet_select_save, 'resizeC', 'columnlen');
+    }   
+ /**
  * 
  * @param {String} type:delete type, 
  * @param {*} st_index 

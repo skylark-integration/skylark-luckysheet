@@ -1,34 +1,32 @@
 define([
     '../methods/get',
-    '../global/editor',
-    '../global/validate',
-    '../global/tooltip',
-    '../global/getRowlen',
-    './select',
+    '../methods/validate',
+    '../widgets/tooltip',
+    '../methods/getRowlen',
+    '../widgets/select',
     './sheetMove',
-    './server',
     '../locale/locale',
     '../store',
-    './menuButton',
-    './conditionformat',
-    './alternateformat',
-    './protection',
+    '../methods/cells',
+    '../methods/conditionformat_methods',
+    '../methods/alternateformat_methods',
+    '../methods/protection_methods',
     '../utils/util',
-    '../global/cleargridelement',
-    '../global/refresh',
-    '../global/sort',
-    '../global/json',
-    '../global/format'
-], function (m_get, editor, m_validate, tooltip, m_getRowlen, m_select, m_sheetMove, server, locale, Store, menuButton, conditionformat, alternateformat, m_protection, m_util, cleargridelement, m_refresh, m_sort, json, m_format) {
+    '../widgets/cleargridelement',
+    '../methods/sort_methods',
+    '../methods/json',
+    '../methods/format',
+    '../methods/luckysheetConfigsetting'
+], function (m_get, m_validate, tooltip, m_getRowlen, m_select, m_sheetMove, locale, Store, cells, conditionformat, alternateformat, m_protection, m_util, cleargridelement,  m_sort, json, m_format,luckysheetConfigsetting) {
     'use strict';
     const {getSheetIndex} = m_get;
-    const {isRealNull, isEditMode} = m_validate;
+    const {isRealNull} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {rowlenByRange} = m_getRowlen;
     const {selectHightlightShow} = m_select;
     const {luckysheetMoveEndCell} = m_sheetMove;
     const {checkProtectionAuthorityNormal} = m_protection;
     const {rgbTohex, showrightclickmenu} = m_util;
-    const {jfrefreshgrid, jfrefreshgrid_rhcw} = m_refresh;
     const {orderbydata, orderbydata1D} = m_sort;
     const {update, genarate} = m_format;
     //筛选配置状态
@@ -68,12 +66,12 @@ define([
             } else {
                 delete file.filter[cindex - stc];
             }
-            server.saveParam('all', Store.currentSheetIndex, file.filter, { 'k': 'filter' });
+            Store.saveParam('all', Store.currentSheetIndex, file.filter, { 'k': 'filter' });
         }
     }    //筛选排序
     //筛选排序
     function orderbydatafiler(str, stc, edr, edc, index, asc) {
-        let d = editor.deepCopyFlowData(Store.flowdata);
+        let d = Store.deepCopyFlowData(Store.flowdata);
         str = str + 1;
         let hasMc = false;    //排序选区是否有合并单元格
         //排序选区是否有合并单元格
@@ -113,7 +111,8 @@ define([
                 'RowlChange': true
             };
         }
-        jfrefreshgrid(d, [{
+        ///jfrefreshgrid(d, [{
+        Store.refreshGrid(d,[{
                 'row': [
                     str,
                     edr
@@ -123,7 +122,7 @@ define([
                     edc
                 ]
             }], allParam);
-    }    //创建筛选按钮
+    }  
     //创建筛选按钮
     function createFilter() {
         if (!checkProtectionAuthorityNormal(Store.currentSheetIndex, 'filter')) {
@@ -181,7 +180,7 @@ define([
         }
         Store.luckysheet_filter_save = $.extend(true, {}, Store.luckysheet_select_save[0]);
         createFilterOptions(Store.luckysheet_filter_save);
-        server.saveParam('all', Store.currentSheetIndex, Store.luckysheet_filter_save, { 'k': 'filter_select' });
+        Store.saveParam('all', Store.currentSheetIndex, Store.luckysheet_filter_save, { 'k': 'filter_select' });
         if (Store.filterchage) {
             Store.jfredo.push({
                 'type': 'filtershow',
@@ -191,7 +190,7 @@ define([
                 'filter_save': Store.luckysheet_filter_save
             });
         }
-    }    //创建筛选配置
+    }  
     //创建筛选配置
     function createFilterOptions(luckysheet_filter_save, filterObj) {
         $('#luckysheet-filter-selected-sheet' + Store.currentSheetIndex).remove();
@@ -558,7 +557,7 @@ define([
             for (let r = st_r + 1; r <= ed_r; r++) {
                 let cell = Store.flowdata[r][cindex];    //单元格颜色
                 //单元格颜色
-                let bg = menuButton.checkstatus(Store.flowdata, r, cindex, 'bg');
+                let bg = cells.checkstatus(Store.flowdata, r, cindex, 'bg');
                 if (bg == null) {
                     bg = '#ffffff';
                 }
@@ -579,7 +578,7 @@ define([
                     bg = bg.substr(0, 1) + bg.substr(1, 1).repeat(2) + bg.substr(2, 1).repeat(2) + bg.substr(3, 1).repeat(2);
                 }    //字体颜色
                 //字体颜色
-                let fc = menuButton.checkstatus(Store.flowdata, r, cindex, 'fc');
+                let fc = cells.checkstatus(Store.flowdata, r, cindex, 'fc');
                 if (checksAF != null) {
                     //若单元格有交替颜色
                     fc = checksAF[0];
@@ -726,7 +725,7 @@ define([
                 }
                 let cell = Store.flowdata[r][cindex];    //单元格颜色
                 //单元格颜色
-                let bg = menuButton.checkstatus(Store.flowdata, r, cindex, 'bg');
+                let bg = cells.checkstatus(Store.flowdata, r, cindex, 'bg');
                 let checksAF = alternateformat.checksAF(r, cindex, af_compute);
                 if (checksAF != null) {
                     //若单元格有交替颜色
@@ -746,7 +745,7 @@ define([
                     bg = bg.substr(0, 1) + bg.substr(1, 1).repeat(2) + bg.substr(2, 1).repeat(2) + bg.substr(3, 1).repeat(2);
                 }    //文本颜色
                 //文本颜色
-                let fc = menuButton.checkstatus(Store.flowdata, r, cindex, 'fc');
+                let fc = cells.checkstatus(Store.flowdata, r, cindex, 'fc');
                 if (checksAF != null) {
                     //若单元格有交替颜色
                     fc = checksAF[0];
@@ -801,9 +800,10 @@ define([
             //config
             Store.config = cfg;
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-            server.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
+            Store.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
             //行高、列宽 刷新  
-            jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             $('#luckysheet-filter-menu, #luckysheet-filter-submenu, #luckysheet-filter-orderby-color-submenu').hide();
             cleargridelement();
         });    //点击复选框
@@ -1010,12 +1010,13 @@ define([
             //清除筛选发送给后台
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].filter = null;
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].filter_select = null;
-            server.saveParam('fsc', Store.currentSheetIndex, null);    //config
+            Store.saveParam('fsc', Store.currentSheetIndex, null);    //config
             //config
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-            server.saveParam('cg', Store.currentSheetIndex, {}, { 'k': 'rowhidden' });    //行高、列宽 刷新  
+            Store.saveParam('cg', Store.currentSheetIndex, {}, { 'k': 'rowhidden' });    //行高、列宽 刷新  
             //行高、列宽 刷新  
-            jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
         });    //按照值进行筛选
         //按照值进行筛选
         $('#luckysheet-filter-byvalue-input').on('input propertychange', function () {
@@ -1378,9 +1379,10 @@ define([
             //config
             Store.config = cfg;
             Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].config = Store.config;
-            server.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
+            Store.saveParam('cg', Store.currentSheetIndex, cfg['rowhidden'], { 'k': 'rowhidden' });    //行高、列宽 刷新  
             //行高、列宽 刷新  
-            jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            ///jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+            Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             $('#luckysheet-filter-menu, #luckysheet-filter-submenu').hide();
             cleargridelement();
         });

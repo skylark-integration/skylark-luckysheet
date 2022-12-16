@@ -48,18 +48,7 @@ define([
         return Store.luckysheet_scroll_status;
     }
     function getluckysheetfile(plugin) {
-        // 获取图表数据
-        if (plugin) {
-            Store.luckysheetfile.forEach(file => {
-                if (!!file.chart) {
-                    file.chart.forEach(chartObj => {
-                        const chartJson = Store.getChartJson(chartObj.chart_id);
-                        chartObj.chartOptions = chartJson;
-                    });
-                }
-            });
-        }
-        return Store.luckysheetfile;
+        return Store.getluckysheetfile(plugin);
     }
     function getconfig() {
         return Store.config;

@@ -1,28 +1,25 @@
 define([
-    './constant',
-    './select',
-    './protection',
+    '../widgets/constant',
+    '../widgets/select',
+    '../methods/protection_methods',
     '../utils/util',
-    '../global/getRowlen',
-    '../global/validate',
-    '../global/cleargridelement',
-    '../global/refresh',
-    '../global/getdata',
-    '../global/sort',
-    '../global/tooltip',
-    '../global/editor',
-    '../global/datecontroll',
+    '../methods/getRowlen',
+    '../methods/luckysheetConfigsetting',
+    '../widgets/cleargridelement',
+    '../methods/getdata',
+    '../controllers/sort',
+    '../widgets/tooltip',
+    '../methods/datecontroll',
     '../store',
     '../locale/locale'
-], function (m_constant, m_select, m_protection, m_util, m_getRowlen, m_validate, cleargridelement, m_refresh, m_getdata, m_sort, tooltip, editor, m_datecontroll, Store, locale) {
+], function (m_constant, m_select, m_protection, m_util, m_getRowlen, luckysheetConfigsetting, cleargridelement, m_getdata, m_sort, tooltip, m_datecontroll, Store, locale) {
     'use strict';
     const {modelHTML} = m_constant;
     const {selectHightlightShow} = m_select;
     const {checkProtectionAuthorityNormal} = m_protection;
     const {replaceHtml, chatatABC} = m_util;
     const {rowlenByRange} = m_getRowlen;
-    const {isEditMode} = m_validate;
-    const {jfrefreshgrid} = m_refresh;
+    const {isEditMode} = luckysheetConfigsetting;
     const {getcellvalue} = m_getdata;
     const {orderbydata, sortColumnSeletion} = m_sort;
     const {isdatatype} = m_datecontroll;
@@ -131,7 +128,7 @@ define([
                         }
                         return;
                     }
-                    let d = editor.deepCopyFlowData(Store.flowdata);
+                    let d = Store.deepCopyFlowData(Store.flowdata);
                     let last = Store.luckysheet_select_save[0];
                     let r1 = last['row'][0], r2 = last['row'][1];
                     let c1 = last['column'][0], c2 = last['column'][1];    //Data has header row
@@ -189,7 +186,8 @@ define([
                             'RowlChange': true
                         };
                     }
-                    jfrefreshgrid(d, [{
+                    ///jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 str,
                                 r2

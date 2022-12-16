@@ -1,9 +1,0 @@
-/**
- * skylark-lucksheet - A version of lucksheet.js that ported to running on skylarkjs.
- * @author Hudaokeji Co.,Ltd
- * @version v0.9.0
- * @link www.skylarkjs.org
- * @license MIT
- */
-define(["./menuButton","../global/formula","../store","../vendors/flatpickr","skylark-moment","../global/format","../global/api"],function(e,t,l,a,o,c,r){"use strict";const{update:s,datenum_local:n}=c,{setCellValue:u,setCellFormat:i}=r;return{cellFocus:function(c,r,p){let d=l.visibledatarow[c],m=0==c?0:l.visibledatarow[c-1],h=l.visibledatacolumn[r],g=0==r?0:l.visibledatacolumn[r-1],f=e.mergeborer(l.flowdata,c,r),b=p.ct.fa||"YYYY-MM-DD",y=s("yyyy-MM-dd hh:mm:ss",p.v),A=(e=>{let t=e.replace(/y/g,"Y");return(t=(t=(t=(t=(t=(t=(t=(t=(t=t.replace(/d/g,"D")).replace(/h/g,"H")).replace(/上午\/下午/g,"A")).replace(/上午/g,"A")).replace(/下午/g,"A")).replace(/AM\/PM/g,"A")).replace(/AM/g,"A")).replace(/PM/g,"A")).replace(/\"/g,"")).includes("A")&&(t=t.replace(/H/g,"h")),t})(b),M=!1,k=!1,w=!1,D=!0,C=!1;f&&(d=f.row[1],m=f.row[0],h=f.column[1],g=f.column[0]),$(".cell-date-picker").show().css({width:h-g+1,height:d-m+1,left:g,top:m}),/[上午下午]/.test(b)&&(C=!0),/[Hhms]/.test(A)&&(M=!0),/[YMD]/.test(A)||(k=!0),/s/.test(A)&&(w=!0),/A/.test(A)&&(D=!1);const v=a("#luckysheet-input-box",{allowInput:!1,noCalendar:k,enableSeconds:w,enableTime:M,dateFormat:A,time_24hr:D,defaultDate:y,onClose(){setTimeout(()=>{v.destroy()},0)},parseDate:(e,t)=>o(e).toDate(),formatDate:(e,t,l)=>C?o(e).format(t).replace("AM","上午").replace("PM","下午"):o(e).format(t),onChange:function(e,a){let o=n(new Date(e));$("#luckysheet-rich-text-editor").html(a),u(c,r,o,{isRefresh:!1}),i(c,r,"ct",p.ct),M||t.updatecell(l.luckysheetCellUpdate[0],l.luckysheetCellUpdate[1])}});$("#luckysheet-input-box").click()}}});
-//# sourceMappingURL=../sourcemaps/controllers/cellDatePickerCtrl.js.map

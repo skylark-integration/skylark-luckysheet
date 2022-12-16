@@ -1,5 +1,6 @@
 require.config({
   baseUrl: "./"
+  ,waitSeconds : 120
   ,map: {
     '*': {
       'jquery': 'skylark-jquery/core'
@@ -272,6 +273,11 @@ require.config({
             main: 'main'
          }, 
          {
+           name : "skylark-domx-plugins-interact",
+           location : "../node_modules/skylark-domx-plugins-interact/dist/uncompressed/skylark-domx-plugins-interact",
+            main: 'main'
+         }, 
+         {
            name : "skylark-net-http",
            location : "../node_modules/skylark-net-http/dist/uncompressed/skylark-net-http",
             main: 'main'
@@ -297,6 +303,7 @@ require.config({
             main: 'main'
          },
 
+     { name: "skylark-localForage", location: "../node_modules/skylark-localForage/dist/uncompressed/skylark-localForage"},
      { name: "skylark-moment", location: "../node_modules/skylark-moment/dist/uncompressed/skylark-moment"},
      { name: "skylark-jquery", location: "../node_modules/skylark-jquery/dist/uncompressed/skylark-jquery"},
      { name: "skylark-jqueryui-effects", location: "../node_modules/skylark-jqueryui-effects/dist/uncompressed/skylark-jqueryui-effects"},

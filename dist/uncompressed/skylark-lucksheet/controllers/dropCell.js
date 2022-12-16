@@ -1,28 +1,25 @@
 define([
-    '../global/location',
-    '../global/count',
-    '../global/border',
-    '../global/validate',
-    '../global/format',
-    '../global/refresh',
-    '../global/editor',
-    '../global/formula',
-    './conditionformat',
-    './protection',
-    './select',
+    '../methods/location',
+    '../methods/count',
+    '../methods/border',
+    '../methods/validate',
+    '../methods/format',
+    '../methods/formula_methods',
+    '../methods/conditionformat_methods',
+    '../methods/protection_methods',
+    '../widgets/select',
     '../methods/get',
     '../utils/util',
     '../store',
     '../locale/locale',
     'skylark-moment'
-], function (m_location, m_count, m_border, m_validate, m_format, m_refresh, editor, formula, conditionformat, m_protection, m_select, m_get, m_util, Store, locale, dayjs) {
+], function (m_location, m_count, m_border, m_validate, m_format,  formula, conditionformat, m_protection, m_select, m_get, m_util, Store, locale, dayjs) {
     'use strict';
     const {rowLocationByIndex, colLocationByIndex} = m_location;
     const {countfunc} = m_count;
     const {getBorderInfoCompute} = m_border;
     const {isRealNum} = m_validate;
     const {genarate, update} = m_format;
-    const {jfrefreshgrid} = m_refresh;
     const {checkProtectionLockedRangeList} = m_protection;
     const {selectHightlightShow} = m_select;
     const {getSheetIndex} = m_get;
@@ -270,7 +267,7 @@ define([
             $('#luckysheet-dropCell-icon').css({
                 'left': col,
                 'top': row
-            });    //点击icon
+            });   
             //点击icon
             $('#luckysheet-dropCell-icon').mouseover(function () {
                 $(this).css('background-color', '#ffe8e8');
@@ -396,7 +393,7 @@ define([
             if (Store.allowEdit === false) {
                 return;
             }
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
             let cfg = $.extend(true, {}, Store.config);
             let borderInfoCompute = getBorderInfoCompute();
@@ -760,7 +757,9 @@ define([
                 'cdformat': cdformat,
                 'dataVerification': dataVerification
             };
-            jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+            ///jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+            Store.refreshRange(d, Store.luckysheet_select_save, allParam);
+
             selectHightlightShow();
         },
         getCopyData: function (d, r1, r2, c1, c2, direction) {

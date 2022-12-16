@@ -4,18 +4,18 @@ define([
     './sheetMove',
     '../widgets/insertFormula',
     '../methods/location',
-    '../methods/validate',
+    '../methods/luckysheetConfigsetting',
     './formula',
     '../widgets/tooltip',
     '../locale/locale',
     '../store'
-], function (m_updateCell, m_constant, m_sheetMove, insertFormula, m_location, m_validate, formula, tooltip, locale, Store) {
+], function (m_updateCell, m_constant, m_sheetMove, insertFormula, m_location, luckysheetConfigsetting, formula, tooltip, locale, Store) {
     'use strict';
     const {luckysheetupdateCell} = m_updateCell;
     const {keycode} = m_constant;
     const {luckysheetMoveHighlightCell} = m_sheetMove;
     const {rowLocation, colLocation, mouseposition} = m_location;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     function formulaBarInitial() {
         //公式栏处理
         const _locale = locale();

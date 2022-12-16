@@ -1,66 +1,10 @@
 define([
     '../store',
     '../locale/locale',
-    '../utils/util',
-    './sheetmanage',
-    './resize',
-    '../global/refresh',
-    './server',
-    './postil',
-    './imageCtrl'
-], function (Store, locale, m_util, sheetmanage, m_resize, m_refresh, server, luckysheetPostil, imageCtrl) {
+    '../utils/util'
+], function (Store, locale, m_util) {
     'use strict';
     const {replaceHtml} = m_util;
-    const {changeSheetContainerSize} = m_resize;
-    const {jfrefreshgrid_rhcw} = m_refresh;
-    let luckysheetZoomTimeout = null;
-    function zoomChange(ratio) {
-        if (Store.flowdata == null || Store.flowdata.length == 0) {
-            return;
-        }
-        clearTimeout(luckysheetZoomTimeout);
-        luckysheetZoomTimeout = setTimeout(() => {
-            if (Store.clearjfundo) {
-                Store.jfredo.push({
-                    'type': 'zoomChange',
-                    'zoomRatio': Store.zoomRatio,
-                    'curZoomRatio': ratio,
-                    'sheetIndex': Store.currentSheetIndex
-                });
-            }
-            Store.zoomRatio = ratio;
-            let currentSheet = sheetmanage.getSheetByIndex();    //批注
-            //批注
-            luckysheetPostil.buildAllPs(currentSheet.data);    //图片
-            //图片
-            imageCtrl.images = currentSheet.images;
-            imageCtrl.allImagesShow();
-            imageCtrl.init();
-            if (currentSheet.config == null) {
-                currentSheet.config = {};
-            }
-            if (currentSheet.config.sheetViewZoom == null) {
-                currentSheet.config.sheetViewZoom = {};
-            }
-            let type = currentSheet.config.curentsheetView;
-            if (type == null) {
-                type = 'viewNormal';
-            }
-            currentSheet.config.sheetViewZoom[type + 'ZoomScale'] = ratio;
-            server.saveParam('all', Store.currentSheetIndex, Store.zoomRatio, { 'k': 'zoomRatio' });
-            server.saveParam('cg', Store.currentSheetIndex, currentSheet.config['sheetViewZoom'], { 'k': 'sheetViewZoom' });
-            zoomRefreshView();
-        }, 100);
-    }
-    function zoomRefreshView() {
-        // let $scrollLeft = $("#luckysheet-scrollbar-x"), $scrollTop = $("#luckysheet-scrollbar-y");
-        // let sl = $scrollLeft.scrollLeft(), st = $scrollTop.scrollTop();
-        // let wp = $scrollLeft.find("div").width(), hp = $scrollTop.find("div").height();
-        jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
-        changeSheetContainerSize();    // let wc = $scrollLeft.find("div").width(), hc = $scrollTop.find("div").height();
-                                       // $scrollLeft.scrollLeft(sl+wc-wp);
-                                       // $scrollTop.scrollTop(st+hc-hp);
-    }
     function zoomInitial() {
         $('#luckysheet-zoom-minus').click(function () {
             let currentRatio;
@@ -77,7 +21,7 @@ define([
                 currentRatio = 0.1;
             }    // Store.zoomRatio = currentRatio;
             // Store.zoomRatio = currentRatio;
-            zoomChange(currentRatio);
+            Store.changeZoom(currentRatio);
             zoomNumberDomBind(currentRatio);
         });
         $('#luckysheet-zoom-plus').click(function () {
@@ -102,7 +46,7 @@ define([
             let xoffset = $(this).offset().left, pageX = e.pageX;
             let currentRatio = positionToRatio(pageX - xoffset);    // Store.zoomRatio = currentRatio;
             // Store.zoomRatio = currentRatio;
-            zoomChange(currentRatio);
+            Store.changeZoom(currentRatio);
             zoomNumberDomBind(currentRatio);
         });
         $('#luckysheet-zoom-cursor').mousedown(function (e) {
@@ -127,7 +71,7 @@ define([
                     pos = 0;
                 }    // Store.zoomRatio = currentRatio;
                 // Store.zoomRatio = currentRatio;
-                zoomChange(currentRatio);
+                Store.changeZoom(currentRatio);
                 let r = Math.round(currentRatio * 100) + '%';
                 $('#luckysheet-zoom-ratioText').html(r);
                 $('#luckysheet-zoom-cursor').css('left', pos - 4);
@@ -142,7 +86,7 @@ define([
         });
         $('#luckysheet-zoom-ratioText').click(function () {
             // Store.zoomRatio = 1;
-            zoomChange(1);
+            Store.changeZoom(1);
             zoomNumberDomBind(1);
         });
         zoomNumberDomBind(Store.zoomRatio);
@@ -173,8 +117,6 @@ define([
         zoomSlierDomBind(ratio);
     }
     return {
-        zoomChange: zoomChange,
-        zoomRefreshView: zoomRefreshView,
         zoomInitial: zoomInitial,
         zoomNumberDomBind: zoomNumberDomBind
     };

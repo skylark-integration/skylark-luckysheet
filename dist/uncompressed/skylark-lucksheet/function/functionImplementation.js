@@ -2,29 +2,26 @@ define([
     './func',
     './matrix_methods',
     '../methods/get',
-    '../controllers/menuButton',
-    '../controllers/sparkline',
-    '../global/formula',
-    '../global/func_methods',
-    '../global/editor',
-    '../global/datecontroll',
-    '../global/validate',
-    '../global/refresh',
-    '../global/format',
-    '../global/sort',
-    '../global/getdata',
+    '../methods/cells',
+    '../widgets/sparkline',
+    '../methods/formula_methods',
+    '../methods/func_methods',
+    '../methods/datecontroll',
+    '../methods/validate',
+    '../methods/format',
+    '../controllers/sort',
+    '../methods/getdata',
     '../utils/util',
     '../store',
     'skylark-moment',
     '../vendors/numeral'
-], function (m_func, m_matrix_methods, m_get, menuButton, luckysheetSparkline, formula, func_methods, editor, m_datecontroll, m_validate, m_refresh, m_format, m_sort, m_getdata, m_util, Store, dayjs, numeral) {
+], function (m_func, m_matrix_methods, m_get, cells, luckysheetSparkline, formula, func_methods,  m_datecontroll, m_validate, m_format, m_sort, m_getdata, m_util, Store, dayjs, numeral) {
     'use strict';
     const {luckysheet_getcelldata, luckysheet_parseData, luckysheet_getValue} = m_func;
     const {inverse} = m_matrix_methods;
     const {getSheetIndex, getluckysheetfile, getRangetxt} = m_get;
     const {isdatetime, diff, isdatatype} = m_datecontroll;
     const {isRealNum, isRealNull, valueIsError, error} = m_validate;
-    const {jfrefreshgrid} = m_refresh;
     const {genarate, update} = m_format;
     const {orderbydata} = m_sort;
     const {getcellvalue} = m_getdata;
@@ -796,7 +793,7 @@ define([
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -873,13 +870,13 @@ define([
                     'count': count,
                     'set': set
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -956,13 +953,13 @@ define([
                     'count': count,
                     'set': set
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1048,7 +1045,7 @@ define([
                     'price': price,
                     type: '0'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     var v = numFormat(data);
                     if (v == null) {
                         v = data;
@@ -1058,7 +1055,7 @@ define([
                         'v': v,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1144,13 +1141,13 @@ define([
                     'price': price,
                     type: '1'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1236,13 +1233,13 @@ define([
                     'price': price,
                     type: '2'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1328,13 +1325,13 @@ define([
                     'price': price,
                     type: '3'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1420,13 +1417,13 @@ define([
                     'price': price,
                     type: '4'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -1512,13 +1509,13 @@ define([
                     'price': price,
                     type: '5'
                 }, function (data) {
-                    var d = editor.deepCopyFlowData(Store.flowdata);
+                    var d = Store.deepCopyFlowData(Store.flowdata);
                     formula.execFunctionGroup(cell_r, cell_c, data);
                     d[cell_r][cell_c] = {
                         'v': data,
                         'f': cell_fp
                     };
-                    jfrefreshgrid(d, [{
+                    Store.refreshRange(d, [{
                             'row': [
                                 cell_r,
                                 cell_r
@@ -23146,7 +23143,7 @@ define([
                 //定义需要格式化data数据
                 var dataformat = formula.readCellDataToOneArray(rangeValue);    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23273,7 +23270,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23398,7 +23395,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23522,7 +23519,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23599,7 +23596,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23645,12 +23642,12 @@ define([
                 var colorLists = formula.sparklinesColorMap(arguments);
                 if (!!colorLists) {
                     sparksetting['colorMap'] = colorLists;
-                }    ////具体实现
+                } 
                 ////具体实现
                 var temp1 = luckysheetSparkline.init(dataformat, sparksetting);
                 return temp1;
             } catch (e) {
-                var err = e;    //计算错误检测
+                var err = e;    
                 //计算错误检测
                 err = formula.errorInfo(err);
                 return [
@@ -23723,7 +23720,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23800,7 +23797,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23875,7 +23872,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -23959,7 +23956,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -24038,7 +24035,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。
@@ -24116,7 +24113,7 @@ define([
                 let index = getSheetIndex(Store.calculateSheetIndex);
                 let sheetdata = luckysheetfile[index].data;    //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
                 //在下面获得该单元格的长度和宽度,同时考虑了合并单元格问题
-                var cellSize = menuButton.getCellRealSize(sheetdata, cell_r, cell_c);
+                var cellSize = cells.getCellRealSize(sheetdata, cell_r, cell_c);
                 var width = cellSize[0];
                 var height = cellSize[1];    //开始进行sparklines的详细设置，宽和高为单元格的宽高。
                 //开始进行sparklines的详细设置，宽和高为单元格的宽高。

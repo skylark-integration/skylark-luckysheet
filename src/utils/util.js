@@ -284,7 +284,8 @@ define([
         //     return 'element';
         // }
         return map[toString.call(obj)];
-    }    //获取当前日期时间
+    }   
+     //获取当前日期时间
     //获取当前日期时间
     function getNowDateTime(format) {
         let now = new Date();

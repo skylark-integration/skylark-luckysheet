@@ -15,11 +15,13 @@ define([
     '../widgets/cleargridelement',
     '../methods/sort_methods',
     '../methods/json',
-    '../methods/format'
-], function (m_get, m_validate, tooltip, m_getRowlen, m_select, m_sheetMove, locale, Store, cells, conditionformat, alternateformat, m_protection, m_util, cleargridelement,  m_sort, json, m_format) {
+    '../methods/format',
+    '../methods/luckysheetConfigsetting'
+], function (m_get, m_validate, tooltip, m_getRowlen, m_select, m_sheetMove, locale, Store, cells, conditionformat, alternateformat, m_protection, m_util, cleargridelement,  m_sort, json, m_format,luckysheetConfigsetting) {
     'use strict';
     const {getSheetIndex} = m_get;
-    const {isRealNull, isEditMode} = m_validate;
+    const {isRealNull} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {rowlenByRange} = m_getRowlen;
     const {selectHightlightShow} = m_select;
     const {luckysheetMoveEndCell} = m_sheetMove;

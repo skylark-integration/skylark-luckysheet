@@ -1,5 +1,6 @@
 define([
     'skylark-pako',
+    'skylark-localForage',
     '../widgets/loading',
     '../widgets/constant',
     '../methods/sheets',
@@ -17,7 +18,7 @@ define([
     '../locale/locale',
     'skylark-moment',
     '../methods/json'
-], function (pako, m_loading,  m_constant, sheets, cells, m_filter, luckysheetFreezen, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, m_util, m_get, Store, m_select, locale, dayjs, json) {
+], function (pako,localforage, m_loading,  m_constant, sheets, cells, m_filter, luckysheetFreezen, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, m_util, m_get, Store, m_select, locale, dayjs, json) {
     'use strict';
     const {showloading, hideloading} = m_loading;
     const {sheetHTML, luckyColor} = m_constant;

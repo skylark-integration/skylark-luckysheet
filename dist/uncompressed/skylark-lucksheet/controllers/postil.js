@@ -1,23 +1,17 @@
 define([
-    '../global/location',
-    '../global/editor',
-    '../global/formula',
-    '../global/cursorPos',
-    '../global/refresh',
+    '../methods/location',
+    '../widgets/cursorPos',
     '../methods/set',
     '../methods/get',
     '../utils/util',
-    './freezen',
-    './menuButton',
-    './protection',
-    './server',
+    '../methods/cells',
+    '../methods/protection_methods',
     '../store',
-    '../global/method'
-], function (m_location, editor, formula, m_cursorPos, m_refresh, m_set, m_get, m_util, luckysheetFreezen, menuButton, m_protection, server, Store, method) {
+    '../methods/luckysheetConfigsetting'
+], function (m_location, m_cursorPos, m_set, m_get, m_util, cells, m_protection, Store, luckysheetConfigsetting) {
     'use strict';
     const {rowLocation, colLocation, mouseposition} = m_location;
     const {luckysheetRangeLast} = m_cursorPos;
-    const {luckysheetrefreshgrid} = m_refresh;
     const {setluckysheet_scroll_status} = m_set;
     const {getSheetIndex} = m_get;
     const {getObjType} = m_util;
@@ -34,7 +28,7 @@ define([
         move: false,
         moveXY: null,
         init: function () {
-            let _this = this;    //点击批注框 聚焦
+            let _this = this;
             //点击批注框 聚焦
             $('#luckysheet-postil-showBoxs').off('mousedown.showPs').on('mousedown.showPs', '.luckysheet-postil-show', function (event) {
                 if (!checkProtectionAuthorityNormal(Store.currentSheetIndex, 'editObjects', false)) {
@@ -56,7 +50,7 @@ define([
                 if (event.which == '3') {
                     event.stopPropagation();
                 }
-            });    //批注框 改变大小
+            }); 
             //批注框 改变大小
             $('#luckysheet-postil-showBoxs').off('mousedown.resize').on('mousedown.resize', '.luckysheet-postil-show .luckysheet-postil-dialog-resize .luckysheet-postil-dialog-resize-item', function (event) {
                 if (!checkProtectionAuthorityNormal(Store.currentSheetIndex, 'editObjects', false)) {
@@ -94,7 +88,7 @@ define([
                 $(this).closest('.luckysheet-postil-show').find('.arrowCanvas').css('z-index', 200);
                 $(this).closest('.luckysheet-postil-show').find('.luckysheet-postil-show-main').css('z-index', 200);
                 event.stopPropagation();
-            });    //批注框 移动
+            });
             //批注框 移动
             $('#luckysheet-postil-showBoxs').off('mousedown.move').on('mousedown.move', '.luckysheet-postil-show .luckysheet-postil-dialog-move .luckysheet-postil-dialog-move-item', function (event) {
                 if (!checkProtectionAuthorityNormal(Store.currentSheetIndex, 'editObjects', false)) {
@@ -141,19 +135,19 @@ define([
             let y = mouse[1];
             let offsetX = 0;
             let offsetY = 0;
-            if (luckysheetFreezen.freezenverticaldata != null && mouse[0] < luckysheetFreezen.freezenverticaldata[0] - luckysheetFreezen.freezenverticaldata[2]) {
+            if (Store.freezenverticaldata != null && mouse[0] < Store.freezenverticaldata[0] - Store.freezenverticaldata[2]) {
                 offsetX = scrollLeft;
             } else {
                 x += scrollLeft;
             }
-            if (luckysheetFreezen.freezenhorizontaldata != null && mouse[1] < luckysheetFreezen.freezenhorizontaldata[0] - luckysheetFreezen.freezenhorizontaldata[2]) {
+            if (Store.freezenhorizontaldata != null && mouse[1] < Store.freezenhorizontaldata[0] - Store.freezenhorizontaldata[2]) {
                 offsetY = scrollTop;
             } else {
                 y += scrollTop;
             }
             let row_index = rowLocation(y)[2];
             let col_index = colLocation(x)[2];
-            let margeset = menuButton.mergeborer(Store.flowdata, row_index, col_index);
+            let margeset = cells.mergeborer(Store.flowdata, row_index, col_index);
             if (!!margeset) {
                 row_index = margeset.row[2];
                 col_index = margeset.column[2];
@@ -275,7 +269,7 @@ define([
             if (isshow) {
                 let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                 let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                let margeset = cells.mergeborer(Store.flowdata, r, c);
                 if (!!margeset) {
                     row = margeset.row[1];
                     row_pre = margeset.row[0];
@@ -304,13 +298,13 @@ define([
                 return;
             }    // Hook function
             // Hook function
-            if (!method.createHookFunction('commentInsertBefore', r, c)) {
+            if (!luckysheetConfigsetting.createHookFunction('commentInsertBefore', r, c)) {
                 return;
             }
             let _this = this;
             let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
             let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-            let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+            let margeset = cells.mergeborer(Store.flowdata, r, c);
             if (!!margeset) {
                 row = margeset.row[1];
                 row_pre = margeset.row[0];
@@ -333,7 +327,7 @@ define([
             _this.drawArrow(ctx, size[4], size[5], size[6], size[7]);
             $('#luckysheet-postil-show_' + r + '_' + c + ' .formulaInputFocus').focus();
             _this.init();
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let rc = [];
             if (d[r][c] == null) {
                 d[r][c] = {};
@@ -350,7 +344,7 @@ define([
             _this.ref(d, rc);    // Hook function
             // Hook function
             setTimeout(() => {
-                method.createHookFunction('commentInsertAfter', r, c, d[r][c]);
+                luckysheetConfigsetting.createHookFunction('commentInsertAfter', r, c, d[r][c]);
             }, 0);
         },
         editPs: function (r, c) {
@@ -366,7 +360,7 @@ define([
                 let postil = Store.flowdata[r][c].ps;
                 let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                 let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                let margeset = cells.mergeborer(Store.flowdata, r, c);
                 if (!!margeset) {
                     row = margeset.row[1];
                     row_pre = margeset.row[0];
@@ -398,27 +392,27 @@ define([
                 return;
             }    // Hook function
             // Hook function
-            if (!method.createHookFunction('commentDeleteBefore', r, c, Store.flowdata[r][c])) {
+            if (!luckysheetConfigsetting.createHookFunction('commentDeleteBefore', r, c, Store.flowdata[r][c])) {
                 return;
             }
             if ($('#luckysheet-postil-show_' + r + '_' + c).length > 0) {
                 $('#luckysheet-postil-show_' + r + '_' + c).remove();
             }
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let rc = [];
             delete d[r][c].ps;
             rc.push(r + '_' + c);
             this.ref(d, rc);    // Hook function
             // Hook function
             setTimeout(() => {
-                method.createHookFunction('commentDeleteAfter', r, c, Store.flowdata[r][c]);
+                luckysheetConfigsetting.createHookFunction('commentDeleteAfter', r, c, Store.flowdata[r][c]);
             }, 0);
         },
         showHidePs: function (r, c) {
             let _this = this;
             let postil = Store.flowdata[r][c].ps;
             let isshow = postil['isshow'];
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let rc = [];
             if (isshow) {
                 d[r][c].ps.isshow = false;
@@ -427,7 +421,7 @@ define([
                 d[r][c].ps.isshow = true;
                 let row = Store.visibledatarow[r], row_pre = r - 1 == -1 ? 0 : Store.visibledatarow[r - 1];
                 let col = Store.visibledatacolumn[c], col_pre = c - 1 == -1 ? 0 : Store.visibledatacolumn[c - 1];
-                let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+                let margeset = cells.mergeborer(Store.flowdata, r, c);
                 if (!!margeset) {
                     row = margeset.row[1];
                     row_pre = margeset.row[0];
@@ -438,10 +432,10 @@ define([
                 let scrollTop = $('#luckysheet-cell-main').scrollTop();
                 let toX = col;
                 let toY = row_pre;
-                if (luckysheetFreezen.freezenverticaldata != null && toX < luckysheetFreezen.freezenverticaldata[0] - luckysheetFreezen.freezenverticaldata[2]) {
+                if (Store.freezenverticaldata != null && toX < Store.freezenverticaldata[0] - Store.freezenverticaldata[2]) {
                     toX += scrollLeft;
                 }
-                if (luckysheetFreezen.freezenhorizontaldata != null && toY < luckysheetFreezen.freezenhorizontaldata[0] - luckysheetFreezen.freezenhorizontaldata[2]) {
+                if (Store.freezenhorizontaldata != null && toY < Store.freezenhorizontaldata[0] - Store.freezenhorizontaldata[2]) {
                     toY += scrollTop;
                 }
                 let left = postil['left'] == null ? toX + 18 * Store.zoomRatio : postil['left'] * Store.zoomRatio;
@@ -464,7 +458,7 @@ define([
         },
         showHideAllPs: function () {
             let _this = this;
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let isAllShow = true;
             let allPs = [];
             for (let r = 0; r < d.length; r++) {
@@ -500,7 +494,7 @@ define([
                         if (!postil['isshow']) {
                             let row = Store.visibledatarow[rowIndex], row_pre = rowIndex - 1 == -1 ? 0 : Store.visibledatarow[rowIndex - 1];
                             let col = Store.visibledatacolumn[colIndex], col_pre = colIndex - 1 == -1 ? 0 : Store.visibledatacolumn[colIndex - 1];
-                            let margeset = menuButton.mergeborer(Store.flowdata, rowIndex, colIndex);
+                            let margeset = cells.mergeborer(Store.flowdata, rowIndex, colIndex);
                             if (!!margeset) {
                                 row = margeset.row[1];
                                 row_pre = margeset.row[0];
@@ -511,10 +505,10 @@ define([
                             let scrollTop = $('#luckysheet-cell-main').scrollTop();
                             let toX = col;
                             let toY = row_pre;
-                            if (luckysheetFreezen.freezenverticaldata != null && toX < luckysheetFreezen.freezenverticaldata[0] - luckysheetFreezen.freezenverticaldata[2]) {
+                            if (Store.freezenverticaldata != null && toX < Store.freezenverticaldata[0] - Store.freezenverticaldata[2]) {
                                 toX += scrollLeft;
                             }
-                            if (luckysheetFreezen.freezenhorizontaldata != null && toY < luckysheetFreezen.freezenhorizontaldata[0] - luckysheetFreezen.freezenhorizontaldata[2]) {
+                            if (Store.freezenhorizontaldata != null && toY < Store.freezenhorizontaldata[0] - Store.freezenhorizontaldata[2]) {
                                 toY += scrollTop;
                             }
                             let left = postil['left'] == null ? toX + 18 * Store.zoomRatio : postil['left'] * Store.zoomRatio;
@@ -546,7 +540,7 @@ define([
                 let c = id.split('luckysheet-postil-show_')[1].split('_')[1];
                 let value = $('#' + id).find('.formulaInputFocus').text();    // Hook function
                 // Hook function
-                if (!method.createHookFunction('commentUpdateBefore', r, c, value)) {
+                if (!luckysheetConfigsetting.createHookFunction('commentUpdateBefore', r, c, value)) {
                     return;
                 }
                 const previousCell = $.extend(true, {}, Store.flowdata[r][c]);
@@ -554,7 +548,7 @@ define([
                 $('#' + id).find('.luckysheet-postil-dialog-resize').hide();
                 $('#' + id).find('.arrowCanvas').css('z-index', 100);
                 $('#' + id).find('.luckysheet-postil-show-main').css('z-index', 100);
-                let d = editor.deepCopyFlowData(Store.flowdata);
+                let d = Store.deepCopyFlowData(Store.flowdata);
                 let rc = [];
                 d[r][c].ps.value = value;
                 rc.push(r + '_' + c);
@@ -564,7 +558,7 @@ define([
                 }    // Hook function
                 // Hook function
                 setTimeout(() => {
-                    method.createHookFunction('commentUpdateAfter', r, c, previousCell, d[r][c]);
+                    luckysheetConfigsetting.createHookFunction('commentUpdateAfter', r, c, previousCell, d[r][c]);
                 }, 0);
             }
         },
@@ -581,26 +575,25 @@ define([
             }    //flowdata
             //flowdata
             Store.flowdata = data;
-            editor.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
+            Store.webWorkerFlowDataCache(Store.flowdata);    //worker存数据
             //worker存数据
-            Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].data = Store.flowdata;    // formula.execFunctionGroupData = Store.flowdata;
-                                                                                                   //共享编辑模式
-            // formula.execFunctionGroupData = Store.flowdata;
+            Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].data = Store.flowdata;
             //共享编辑模式
-            if (server.allowUpdate) {
+            if (Store.allowUpdate) {
                 for (let i = 0; i < rc.length; i++) {
                     let r = rc[i].split('_')[0];
                     let c = rc[i].split('_')[1];
-                    server.saveParam('v', Store.currentSheetIndex, Store.flowdata[r][c], {
+                    Store.saveParam('v', Store.currentSheetIndex, Store.flowdata[r][c], {
                         'r': r,
                         'c': c
                     });
                 }
-            }    //刷新表格
+            } 
             //刷新表格
-            setTimeout(function () {
-                luckysheetrefreshgrid();
-            }, 1);
+            ///setTimeout(function () {
+            ///    luckysheetrefreshgrid();
+            ///}, 1);
+            Store.refresh();
         },
         positionSync: function () {
             let _this = this;

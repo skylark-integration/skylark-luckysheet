@@ -1,30 +1,29 @@
 define([
-    './select',
-    './menuButton',
+    '../widgets/select',
     './conditionformat',
-    './protection',
-    '../global/editor',
-    '../global/tooltip',
-    '../global/formula',
-    '../global/border',
-    '../global/getdata',
-    '../global/getRowlen',
-    '../global/validate',
-    '../global/refresh',
-    '../global/format',
+    '../methods/protection_methods',
+    '../methods/luckysheetConfigsetting',
+    '../widgets/tooltip',
+    '../methods/formula_methods',
+    '../methods/border',
+    '../methods/getdata',
+    '../methods/getRowlen',
+    '../methods/validate',
+    '../methods/format',
     '../methods/get',
+    '../methods/cells',    
     '../utils/util',
     '../store',
     '../locale/locale'
-], function (m_select, menuButton, conditionformat, m_protection, editor, tooltip, formula, m_border, m_getdata, m_getRowlen, m_validate, m_refresh, m_format, m_get, m_util, Store, locale) {
+], function (m_select, conditionformat, m_protection, luckysheetConfigsetting,tooltip, formula, m_border, m_getdata,cells, m_getRowlen, m_validate, m_format, m_get, m_util, Store, locale) {
     'use strict';
     const {selectHightlightShow, selectionCopyShow} = m_select;
     const {checkProtectionLockedRangeList} = m_protection;
     const {getBorderInfoCompute} = m_border;
     const {getdatabyselection, getcellvalue, datagridgrowth} = m_getdata;
     const {rowlenByRange} = m_getRowlen;
-    const {isEditMode, hasPartMC, isRealNum} = m_validate;
-    const {jfrefreshgrid, jfrefreshgrid_pastcut} = m_refresh;
+    const {hasPartMC, isRealNum} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {genarate, update} = m_format;
     const {getSheetIndex} = m_get;
     const {replaceHtml, getObjType, luckysheetfontformat} = m_util;
@@ -40,7 +39,7 @@ define([
             }
             let cpdata = ' ';
             Store.luckysheet_selection_range = [];
-            selectionCopyShow();    // Store.luckysheet_copy_save = {};
+            selectionCopyShow(); 
             // Store.luckysheet_copy_save = {};
             if (!clipboardData) {
                 let textarea = $('#luckysheet-copy-content').css('visibility', 'hidden');
@@ -161,7 +160,7 @@ define([
                 //边框
                 borderInfoCompute = getBorderInfoCompute();
             }
-            let cpdata = '', d = editor.deepCopyFlowData(Store.flowdata);
+            let cpdata = '', d = Store.deepCopyFlowData(Store.flowdata);
             let colgroup = '';    // rowIndexArr = rowIndexArr.sort();
                                   // colIndexArr = colIndexArr.sort();
             // rowIndexArr = rowIndexArr.sort();
@@ -201,7 +200,7 @@ define([
                         } else {
                             c_value = getcellvalue(r, c, d, 'm');
                         }
-                        style += menuButton.getStyleByCell(d, r, c);
+                        style += cells.getStyleByCell(d, r, c);
                         if (getObjType(d[r][c]) == 'object' && 'mc' in d[r][c]) {
                             if ('rs' in d[r][c]['mc']) {
                                 span = 'rowspan="' + d[r][c]['mc'].rs + '" colspan="' + d[r][c]['mc'].cs + '"';    //边框
@@ -584,7 +583,7 @@ define([
                     }
                     return;
                 }
-                let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+                let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
                 //取数据
                 let rowMaxLength = d.length;
                 let cellMaxLength = d[0].length;    //若应用范围超过最大行或最大列，增加行列
@@ -649,7 +648,7 @@ define([
                             cfg['borderInfo'].push(bd_obj);
                         }
                         let fontset = luckysheetfontformat(x[c]);
-                        let oneLineTextHeight = menuButton.getTextSize('田', fontset)[1];    //比较计算高度和当前高度取最大高度
+                        let oneLineTextHeight = cells.getTextSize('田', fontset)[1];    //比较计算高度和当前高度取最大高度
                         //比较计算高度和当前高度取最大高度
                         if (oneLineTextHeight > currentRowLen) {
                             currentRowLen = oneLineTextHeight;
@@ -676,10 +675,10 @@ define([
                         'cfg': cfg,
                         'RowlChange': true
                     };
-                    jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                    Store.refreshRange(d, Store.luckysheet_select_save, allParam);
                 } else {
                     let allParam = { 'cfg': cfg };
-                    jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                    Store.refreshRange(d, Store.luckysheet_select_save, allParam);
                     selectHightlightShow();
                 }
             } else {
@@ -692,7 +691,7 @@ define([
                     }
                     dataChe.push(che[i].split('\t'));
                 }
-                let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+                let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
                 //取数据
                 let last = Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1];
                 let curR = last['row'] == null ? 0 : last['row'][0];
@@ -760,9 +759,9 @@ define([
                 ];
                 if (addr > 0 || addc > 0) {
                     let allParam = { 'RowlChange': true };
-                    jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                    Store.refreshRange(d, Store.luckysheet_select_save, allParam);
                 } else {
-                    jfrefreshgrid(d, Store.luckysheet_select_save);
+                    Store.refreshRange(d, Store.luckysheet_select_save);
                     selectHightlightShow();
                 }
             }
@@ -814,7 +813,7 @@ define([
                 }
                 return;
             }
-            let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+            let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
             //取数据
             let rowMaxLength = d.length;
             let cellMaxLength = d[0].length;
@@ -1184,7 +1183,7 @@ define([
                         }
                         curCdformat[i].cellrange = emptyRange;
                     }
-                }    //当前表操作
+                } 
                 //当前表操作
                 source = {
                     'sheetIndex': Store.currentSheetIndex,
@@ -1230,9 +1229,11 @@ define([
                 };
             }
             if (addr > 0 || addc > 0) {
-                jfrefreshgrid_pastcut(source, target, true);
+                ///jfrefreshgrid_pastcut(source, target, true);
+                Store.refreshGrid_pastcut(source,target,true);
             } else {
-                jfrefreshgrid_pastcut(source, target, copyRowlChange);
+                ///jfrefreshgrid_pastcut(source, target, copyRowlChange);
+                Store.refreshGrid_pastcut(source,target,copyRowlChange);
             }
         },
         pasteHandlerOfCopyPaste: function (copyRange) {
@@ -1318,7 +1319,7 @@ define([
             }
             let timesH = (maxh - minh + 1) / copyh;
             let timesC = (maxc - minc + 1) / copyc;
-            let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+            let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
             //取数据
             let rowMaxLength = d.length;
             let cellMaxLength = d[0].length;    //若应用范围超过最大行或最大列，增加行列
@@ -1511,14 +1512,14 @@ define([
                     'cdformat': cdformat,
                     'dataVerification': dataVerification
                 };
-                jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                Store.refreshRange(d, Store.luckysheet_select_save, allParam);
             } else {
                 let allParam = {
                     'cfg': cfg,
                     'cdformat': cdformat,
                     'dataVerification': dataVerification
                 };
-                jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                Store.refreshRange(d, Store.luckysheet_select_save, allParam);
                 selectHightlightShow();
             }
         },
@@ -1573,7 +1574,7 @@ define([
             //复制行 组数
             let timesC = Math.ceil((maxc - minc + 1) / copyc);    //复制列 组数
             //复制列 组数
-            let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+            let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
             //取数据
             let cellMaxLength = d[0].length;
             let rowMaxLength = d.length;
@@ -1759,14 +1760,14 @@ define([
                     'cdformat': cdformat,
                     'dataVerification': dataVerification
                 };
-                jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                Store.refreshRange(d, Store.luckysheet_select_save, allParam);
             } else {
                 let allParam = {
                     'cfg': cfg,
                     'cdformat': cdformat,
                     'dataVerification': dataVerification
                 };
-                jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
+                Store.refreshRange(d, Store.luckysheet_select_save, allParam);
                 selectHightlightShow();
             }
         },

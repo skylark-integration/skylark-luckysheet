@@ -1,27 +1,26 @@
 define([
-    './luckysheetConfigsetting',
+    '../methods/luckysheetConfigsetting',
     './menuButton',
     './conditionformat',
-    './server',
     './updateCell',
-    './constant',
+    '../widgets/constant',
     './sheetMove',
-    './select',
+    '../widgets/select',
     './selection',
     './searchReplace',
     './controlHistory',
-    './imageCtrl',
+    '../widgets/imageCtrl',
     '../utils/util',
     '../methods/get',
-    '../global/validate',
-    '../global/cursorPos',
-    '../global/formula',
-    '../global/cleargridelement',
-    '../global/tooltip',
+    '../methods/validate',
+    '../widgets/cursorPos',
+    './formula',
+    '../widgets/cleargridelement',
+    '../widgets/tooltip',
     '../locale/locale',
     './inlineString',
     '../store'
-], function (luckysheetConfigsetting, menuButton, conditionformat, server, m_updateCell, m_constant, m_sheetMove, m_select, selection, searchReplace, controlHistory, imageCtrl, m_util, m_get, m_validate, m_cursorPos, formula, cleargridelement, tooltip, locale, m_inlineString, Store) {
+], function (luckysheetConfigsetting, menuButton, conditionformat, m_updateCell, m_constant, m_sheetMove, m_select, selection, searchReplace, controlHistory, imageCtrl, m_util, m_get, m_validate, m_cursorPos, formula, cleargridelement, tooltip, locale, m_inlineString, Store) {
     'use strict';
     const {luckysheetupdateCell, setCenterInputPosition} = m_updateCell;
     const {keycode} = m_constant;
@@ -29,7 +28,8 @@ define([
     const {selectHightlightShow, selectIsOverlap} = m_select;
     const {getByteLen, getNowDateTime, luckysheetactiveCell} = m_util;
     const {getSheetIndex} = m_get;
-    const {hasPartMC, isEditMode} = m_validate;
+    const {hasPartMC} = m_validate;
+    const isEditMode = luckysheetConfigsetting.isEditMode;
     const {luckysheetRangeLast} = m_cursorPos;
     const {enterKeyControll} = m_inlineString;
     let luckysheet_shiftkeydown = false;
@@ -755,7 +755,7 @@ define([
             e.preventDefault();
         });    //top workBook rename
         //top workBook rename
-        $('#luckysheet_info_detail_input').val(server.title).css('width', getByteLen(server.title) * 10).keydown(function () {
+        $('#luckysheet_info_detail_input').val(Store.title).css('width', getByteLen(Store.title) * 10).keydown(function () {
             let ctrlKey = event.ctrlKey;
             let altKey = event.altKey;
             let shiftKey = event.shiftKey;
@@ -779,7 +779,7 @@ define([
                 $('#luckysheet_info_detail_input').css('width', inputlen);
             }
         }).change(function () {
-            server.saveParam('na', null, $(this).val());
+            Store.saveParam('na', null, $(this).val());
         });    // 右击菜单的input输入框 敲击Enter一样生效
         // 右击菜单的input输入框 敲击Enter一样生效
         $('#' + Store.container).add('input.luckysheet-mousedown-cancel').keydown(function (event) {

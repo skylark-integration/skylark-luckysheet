@@ -1,4 +1,4 @@
-define(['../global/validate'], function (m_validate) {
+define(['../methods/validate'], function (m_validate) {
     'use strict';
     const {isRealNum} = m_validate;
     /*

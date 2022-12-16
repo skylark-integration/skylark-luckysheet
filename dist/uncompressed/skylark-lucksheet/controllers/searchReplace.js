@@ -1,28 +1,24 @@
 define([
     '../utils/util',
     '../methods/get',
-    './constant',
-    './select',
-    './sheetmanage',
-    '../global/validate',
-    '../global/format',
-    '../global/setdata',
-    '../global/refresh',
-    '../global/editor',
-    '../global/tooltip',
-    '../global/func_methods',
+    '../widgets/constant',
+    '../widgets/select',
+    '../methods/luckysheetConfigsetting',
+    '../methods/format',
+    '../methods/setdata',
+    '../widgets/tooltip',
+    '../methods/func_methods',
     '../store',
     '../locale/locale'
-], function (m_util, m_get, m_constant, m_select, sheetmanage, m_validate, m_format, m_setdata, m_refresh, editor, tooltip, func_methods, Store, locale) {
+], function (m_util, m_get, m_constant, m_select, luckysheetConfigsetting, m_format, m_setdata, tooltip, func_methods, Store, locale) {
     'use strict';
     const {replaceHtml, chatatABC} = m_util;
     const {getSheetIndex} = m_get;
     const {modelHTML, keycode} = m_constant;
     const {selectHightlightShow} = m_select;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {valueShowEs} = m_format;
     const {setcellvalue} = m_setdata;
-    const {jfrefreshgrid} = m_refresh;
     //查找替换
     const luckysheetSearchReplace = {
         createDialog: function (source) {
@@ -98,7 +94,7 @@ define([
                 let c = $(this).attr('data-col');
                 let sheetIndex = $(this).attr('data-sheetIndex');
                 if (sheetIndex != Store.currentSheetIndex) {
-                    sheetmanage.changeSheetExec(sheetIndex);
+                    Store.changeSheet(sheetIndex);
                 }
                 Store.luckysheet_select_save = [{
                         'row': [
@@ -477,7 +473,7 @@ define([
                 caseCheck = true;
             }
             let replaceText = $('#luckysheet-search-replace #replaceInput input').val();
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             let r, c;
             if (wordCheck) {
                 r = searchIndexArr[count].r;
@@ -509,7 +505,8 @@ define([
             if ($('#luckysheet-search-replace #searchAllbox').is(':visible')) {
                 $('#luckysheet-search-replace #searchAllbox').hide();
             }
-            jfrefreshgrid(d, Store.luckysheet_select_save);
+            ///jfrefreshgrid(d, Store.luckysheet_select_save);
+            Store.refeshRange(d, Store.luckysheet_select_save);
             selectHightlightShow();
             let scrollLeft = $('#luckysheet-cell-main').scrollLeft(), scrollTop = $('#luckysheet-cell-main').scrollTop();
             let winH = $('#luckysheet-cell-main').height(), winW = $('#luckysheet-cell-main').width();
@@ -583,7 +580,7 @@ define([
                 caseCheck = true;
             }
             let replaceText = $('#luckysheet-search-replace #replaceInput input').val();
-            let d = editor.deepCopyFlowData(Store.flowdata);
+            let d = Store.deepCopyFlowData(Store.flowdata);
             if (wordCheck) {
                 for (let i = 0; i < searchIndexArr.length; i++) {
                     let r = searchIndexArr[i].r;
@@ -628,7 +625,8 @@ define([
             if ($('#luckysheet-search-replace #searchAllbox').is(':visible')) {
                 $('#luckysheet-search-replace #searchAllbox').hide();
             }
-            jfrefreshgrid(d, range);
+            ///jfrefreshgrid(d, range);
+            Store.refreshRange(d, range);
             Store.luckysheet_select_save = $.extend(true, [], range);
             selectHightlightShow();
             let succeedInfo = replaceHtml(locale_findAndReplace.successTip, { 'xlength': searchIndexArr.length });

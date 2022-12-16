@@ -1,26 +1,52 @@
 define([
     './sheetmanage',
     './server',
-    './constant',
+    '../widgets/constant',
     '../utils/util',
     '../methods/get',
-    '../global/validate',
-    '../global/formula',
-    '../global/cleargridelement',
-    '../global/tooltip',
-    '../global/cursorPos',
+    '../methods/luckysheetConfigsetting',
+    './formula',
+    '../widgets/cleargridelement',
+    '../widgets/tooltip',
+    '../widgets/cursorPos',
     '../locale/locale',
-    '../store',
-    './luckysheetConfigsetting',
-    '../global/api'
-], function (sheetmanage, server, m_constant, m_util, m_get, m_validate, formula, cleargridelement, tooltip, m_cursorPos, locale, Store, luckysheetConfigsetting, m_api) {
+    '../store'
+], function (sheetmanage, server, m_constant, m_util, m_get, luckysheetConfigsetting, formula, cleargridelement, tooltip, m_cursorPos, locale, Store) {
     'use strict';
     const {sheetselectlistitemHTML, sheetselectlistHTML, keycode} = m_constant;
     const {replaceHtml, mouseclickposition} = m_util;
     const {getSheetIndex} = m_get;
-    const {isEditMode} = m_validate;
+    const {isEditMode} = luckysheetConfigsetting;
     const {selectTextDom} = m_cursorPos;
-    const {pagerInit} = m_api;
+    
+    ///const {pagerInit} = m_api;
+    //from ../global/api
+    function pagerInit(config) {
+        $('#luckysheet-bottom-pager').remove();
+        $('#luckysheet-sheet-area').append('<div id="luckysheet-bottom-pager" style="font-size: 14px; margin-left: 10px; display: inline-block;"></div>');
+        $('#luckysheet-bottom-pager').sPage({
+            page: config.pageIndex,
+            //当前页码，必填
+            total: config.total,
+            //数据总条数，必填
+            selectOption: config.selectOption,
+            // 选择每页的行数，
+            pageSize: config.pageSize,
+            //每页显示多少条数据，默认10条
+            showTotal: true,
+            // 是否显示总数
+            showSkip: config.showSkip || true,
+            //是否显示跳页，默认关闭：false
+            showPN: config.showPN || true,
+            //是否显示上下翻页，默认开启：true
+            backFun: function (page) {
+                page.pageIndex = page.page;
+                if (!luckysheetConfigsetting.createHookFunction('onTogglePager', page)) {
+                    return;
+                }
+            }
+        });
+    }
     selectTextDom;
     //表格底部名称栏区域 相关事件（增、删、改、隐藏显示、颜色等等）
     let isInitialSheetConfig = false, luckysheetcurrentSheetitem = null, jfdbclicklagTimeout = null, oldSheetFileName = '';
@@ -173,7 +199,7 @@ define([
                     luckysheetcurrentSheetitem.append('<div class="luckysheet-sheets-item-color" style=" position: absolute; width: 100%; height: 3px; bottom: 0px; left: 0px; background-color: ' + color + ';"></div>');
                     let index = getSheetIndex(Store.currentSheetIndex);
                     Store.luckysheetfile[index].color = color;
-                    server.saveParam('all', Store.currentSheetIndex, color, { 'k': 'color' });
+                    Store.saveParam('all', Store.currentSheetIndex, color, { 'k': 'color' });
                     if (Store.clearjfundo) {
                         let redo = {};
                         redo['type'] = 'sheetColor';
@@ -193,7 +219,7 @@ define([
                 luckysheetcurrentSheetitem.find('.luckysheet-sheets-item-color').remove();
                 let index = getSheetIndex(Store.currentSheetIndex);
                 Store.luckysheetfile[index].color = null;
-                server.saveParam('all', Store.currentSheetIndex, null, { 'k': 'color' });
+                Store.saveParam('all', Store.currentSheetIndex, null, { 'k': 'color' });
                 if (Store.clearjfundo) {
                     let redo = {};
                     redo['type'] = 'sheetColor';
@@ -384,7 +410,7 @@ define([
             }
             sheetmanage.sheetArrowShowAndHide();
             Store.luckysheetfile[index].name = txt;
-            server.saveParam('all', Store.currentSheetIndex, txt, { 'k': 'name' });
+            Store.saveParam('all', Store.currentSheetIndex, txt, { 'k': 'name' });
             $t.attr('contenteditable', 'false').removeClass('luckysheet-mousedown-cancel');
             if (Store.clearjfundo) {
                 let redo = {};

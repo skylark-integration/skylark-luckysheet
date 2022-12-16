@@ -4113,15 +4113,7 @@ define([
         return ctr;
     }
     function getAllSheets() {
-        let data = $.extend(true, [], Store.luckysheetfile);
-        data.forEach((item, index, arr) => {
-            if (item.data != null && item.data.length > 0) {
-                item.celldata = sheetmanage.getGridData(item.data);
-            }
-            delete item.load;
-            delete item.freezen;
-        });
-        return data;
+        return Store.getAllSheets();
     }
     function getSheet(options = {}) {
         let {index, order, name} = { ...options };
@@ -4172,7 +4164,8 @@ define([
         if (file.index == Store.currentSheetIndex) {
             Store.config = cfg;
             if ('rowhidden' in cfg || 'colhidden' in cfg || 'rowlen' in cfg || 'columnlen' in cfg) {
-                jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                //jfrefreshgrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
+                Store.refreshGrid_rhcw(Store.flowdata.length, Store.flowdata[0].length);
             }
             ///setTimeout(function () {
             ///    luckysheetrefreshgrid();

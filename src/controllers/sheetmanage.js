@@ -1,4 +1,5 @@
 define([
+    'skylark-localForage',
     '../methods/validate',
     '../widgets/cleargridelement',
     '../methods/getdata',
@@ -28,7 +29,7 @@ define([
     '../widgets/resize',
     './zoom',
     './menuButton'
-], function (m_validate, cleargridelement, m_getdata, m_setdata, luckysheetcreatedom, tooltip, formula,  rhchInit, sheets, m_extend, m_util, m_constant, server, luckysheetConfigsetting, pivotTable, luckysheetsizeauto, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, luckysheetFreezen, m_filter, m_select, Store, locale, m_plugin, m_resize, m_zoom, menuButton) {
+], function (localforage,m_validate, cleargridelement, m_getdata, m_setdata, luckysheetcreatedom, tooltip, formula,  rhchInit, sheets, m_extend, m_util, m_constant, server, luckysheetConfigsetting, pivotTable, luckysheetsizeauto, luckysheetPostil, imageCtrl, dataVerificationCtrl, hyperlinkCtrl, luckysheetFreezen, m_filter, m_select, Store, locale, m_plugin, m_resize, m_zoom, menuButton) {
     'use strict';
     const {isRealNum} = m_validate;
     const isEditMode = luckysheetConfigsetting.isEditMode;
@@ -1004,6 +1005,11 @@ define([
             ///luckysheetrefreshgrid();
             Store.refresh();
         }, 1);
+    };
+
+    Store.onInvalidate = function(){
+        sheetmanage.sheetArrowShowAndHide(); 
+        sheetmanage.sheetBarShowAndHide(); 
     };
 
     // from zoom.js

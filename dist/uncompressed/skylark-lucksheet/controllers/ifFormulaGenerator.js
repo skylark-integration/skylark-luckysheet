@@ -1,12 +1,11 @@
 define([
-    '../global/formula',
-    '../global/editor',
+    '../methods/formula_methods',
     './updateCell',
-    './constant',
+    '../widgets/constant',
     '../utils/util',
     '../store',
     '../locale/locale'
-], function (formula, editor, m_updateCell, m_constant, m_util, Store, locale) {
+], function (formula, m_updateCell, m_constant, m_util, Store, locale) {
     'use strict';
     const {luckysheetupdateCell} = m_updateCell;
     const {modelHTML} = m_constant;
@@ -69,7 +68,7 @@ define([
                 let value = $(this).parents('#luckysheet-ifFormulaGenerator-multiRange-dialog').find('input').val().trim();
                 let cellrange = formula.getcellrange(value);
                 let str_r = cellrange['row'][0], end_r = cellrange['row'][1], str_c = cellrange['column'][0], end_c = cellrange['column'][1];
-                let d = editor.deepCopyFlowData(Store.flowdata);    //取数据
+                let d = Store.deepCopyFlowData(Store.flowdata);    //取数据
                 //取数据
                 let arr = [];    //获取范围内所有数值
                 //获取范围内所有数值
